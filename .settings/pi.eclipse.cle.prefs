@@ -1,0 +1,11 @@
+//src/Q.cup/cup-compact-red=false
+//src/Q.cup/cup-debug=false
+//src/Q.cup/cup-expected-conflicts=0
+//src/Q.cup/cup-no-positions=false
+//src/Q.cup/cup-no-scanner=false
+//src/Q.cup/cup-non-terms=false
+//src/Q.cup/cup-output=src
+//src/Q.cup/cup-parser-class=QCup
+//src/Q.cup/cup-symbols-class=QSym
+//src/Q.cup/cup-symbols-if=true
+eclipse.preferences.version=1

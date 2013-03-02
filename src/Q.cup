@@ -1,0 +1,11 @@
+package uk.ac.ucl.comp2010.bestgroup;
+
+import java_cup.runtime.*;
+
+terminal		ANY;
+
+non terminal	expr;
+
+expr			::=	ANY expr
+				| ANY
+				;
