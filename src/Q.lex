@@ -45,9 +45,11 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 %}
 
 ANY				=	[^ \t\r\n]*
+FDEF			=	fdef
 WHITESPACE		=	[ \t\r\n]*
 
 %%
 
+{FDEF}				{	return sym(FDEF); }
 {ANY}				{	return sym(ANY); }
 {WHITESPACE}		{ /* ignore whitespace*/ }

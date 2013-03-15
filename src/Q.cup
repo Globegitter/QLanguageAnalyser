@@ -2,7 +2,7 @@ package uk.ac.ucl.comp2010.bestgroup;
 
 import java_cup.runtime.*;
 
-terminal		ANY;
+terminal		ANY, FDEF;
 
 non terminal	expr;
 
