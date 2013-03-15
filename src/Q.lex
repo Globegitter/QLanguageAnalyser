@@ -50,21 +50,20 @@ WHITESPACE			=	[ \t\r\n\f\v]*
 DIGIT				= 	[0-9]
 INT					=	-?{DIGIT}+
 FLOAT				=	-?{DIGIT}.{DIGIT}+
-CHAR				=	\' [{DIGIT}[a-zA-Z][\p{P}]] \' 
+CHAR				=	\' [a-zA-Z0-9,!@#$%&\^\*\(\)] \' 
 BOOL				=	true|false
 STRING				=	\"{char}+\"
 COMPARISON			= 	<|<=|>|>=|==|!=
-ID					=	[a-z][{CHAR}{DIGIT}]*
+ID					=	[a-z] [:jletterdigit:]*
 TYPE				= 	bool|int|float|char|string|list|tuple
 
 LINECOMMENT			=	"//"[^\r\n]*[\r\n]
 MULTILINECOMMENT	=	"/*".+"*/"
 
-COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
+COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT} 
 
 %%
 
-{FDEF}				{	return sym(FDEF);	 }
 "!"					{	return sym("NOT");	 }
 "||"				{ 	return sym("OR"); 	 }
 "&&"				{	return sym("AND");	 }
