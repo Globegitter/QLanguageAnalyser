@@ -44,6 +44,9 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 	}
 %}
 
+
+WHITESPACE			=	[ \t\r\n\f\v]*
+
 INT					=	int
 FLOAT				=	float
 CHAR				=	char
@@ -54,7 +57,9 @@ COMPARISON			=
 SEQUENCEID			=	
 ID					=
 
-COMMENT				=
+LINECOMMENT			=	"//"[^\r\n]*[\r\n]
+MULTILINECOMMENT	=
+COMMENT				=	
 
 TDEF				=	tdef
 FDEF				=	fdef
@@ -72,7 +77,6 @@ BRACKETCLOSE		=	)
 CURLYBRACKETOPEN	=	{
 CURLYBRACKETCLOSE	=	}
 
-WHITESPACE			=	[ \t\r\n\f]*
 
 %%
 
