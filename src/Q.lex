@@ -44,9 +44,38 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 	}
 %}
 
-ANY				=	[^ \t\r\n]*
-FDEF			=	fdef
-WHITESPACE		=	[ \t\r\n]*
+NUMERIC				=
+CHAR				=
+BOOL				=
+SEQUENCE			=
+COMPARISON			=
+
+SEQUENCEID			=
+ID					=
+
+COMMENT				=
+
+TDEF				=
+FDEF				=	fdef
+VOID				=
+RETURN				=
+VAR					=
+IF					=
+ELSE				=
+WHILE				=
+DO					=
+REPEAT				=
+UNTIL				=
+BRACKETOPEN			=
+BRACKETCLOSE		=
+CURLYBRACKETOPEN	=
+CURLYBRACKETCLOSE	=
+
+
+
+
+
+WHITESPACE	=	[ \t\r\n]*
 
 %%
 
