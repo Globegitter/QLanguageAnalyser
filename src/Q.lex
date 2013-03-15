@@ -62,25 +62,36 @@ MULTILINECOMMENT	=	"/*".+"*/"
 
 COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 
-TDEF				=	tdef
-FDEF				=	fdef
-VOID				=	void
-RETURN				=	return
-VAR					=	var
-IF					=	if
-ELSE				=	else
-WHILE				=	while
-DO					=	do
-REPEAT				=	repeat
-UNTIL				=	until
-BRACKETOPEN			=	(
-BRACKETCLOSE		=	)
-CURLYBRACKETOPEN	=	{
-CURLYBRACKETCLOSE	=	}
-
-
 %%
 
-{FDEF}				{	return sym(FDEF); }
-{ANY}				{	return sym(ANY); }
+{FDEF}				{	return sym(FDEF);	 }
+"!"					{	return sym("NOT");	 }
+"||"				{ 	return sym("OR"); 	 }
+"&&"				{	return sym("AND");	 }
+"+"					{	return sym("PLUS");	 }
+"-"					{ 	return sym("MINUS"); }
+"*"					{	return sym("TIMES"); }
+"/"					{	return sym("DIVIDE");}
+"^"					{	return sym("POWER"); }
+"<"					{	return sym("LESS");  }
+">"					{	return sym("GREATER");}
+"<="				{	return sym("LESSEQUALS");}
+"=<" 				{ 	return sym("GREATEREQUALS");}
+"=="				{	return sym("EQUALSCOMPARISON");}
+"!="				{	return sym("NOT");}
+"in"				{	return sym("IN");}
+"="					{	return sym("EQUALS");}
+";"					{	return sym("SEMICOLON");}
+":"					{	return sym("COLON");}
+","					{	return sym("COMMA");}
+"if"				{	return sym("IF");}
+"else"				{ 	return sym("ELSE");}
+"return"			{	return sym("RETURN");}
+"while"				{	return sym("WHILE");}
+"do"				{	return sym("DO");}
+"repeat"			{	return sym("REPEAT");}
+"until"				{	return sym("UNTIL");}
+"tdef"				{	return sym("TDEF");}
+"fdef"				{	return sym("FDEF");}
+
 {WHITESPACE}		{ /* ignore whitespace*/ }
