@@ -44,10 +44,11 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 	}
 %}
 
-INT					=	int
-FLOAT				=	float
-CHAR				=	char
-BOOL				=	bool
+DIGIT				= 	[0-9]
+INT					=	-?{DIGIT}+
+FLOAT				=	-?{DIGIT}+.{[1-9]}+
+CHAR				=	\' {DIGIT} | [a-zA-Z] | [\p{P}] \' 
+BOOL				=	true|false
 SEQUENCE			=	
 COMPARISON			=	
 
