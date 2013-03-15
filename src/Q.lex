@@ -46,14 +46,13 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 
 DIGIT				= 	[0-9]
 INT					=	-?{DIGIT}+
-FLOAT				=	-?{DIGIT}+.{[1-9]}+
-CHAR				=	\' {DIGIT} | [a-zA-Z] | [\p{P}] \' 
+FLOAT				=	-?{DIGIT}.{DIGIT}+
+CHAR				=	\' [{DIGIT}[a-zA-Z][\p{P}]] \' 
 BOOL				=	true|false
-SEQUENCE			=	
-COMPARISON			=	
-
-SEQUENCEID			=	
-ID					=
+STRING				=	\"[{char}+]\"
+COMPARISON			= 	<|<=|>|>=|==|!=
+ID					=	[a-z][{CHAR}{DIGIT}]*
+TYPE				= 	bool|int|float|char|string|list|tuple
 
 COMMENT				=	
 
