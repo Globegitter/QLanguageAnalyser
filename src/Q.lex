@@ -54,7 +54,7 @@ COMPARISON			=
 SEQUENCEID			=	
 ID					=
 
-COMMENT				=
+COMMENT				=	
 
 TDEF				=	tdef
 FDEF				=	fdef
