@@ -44,38 +44,35 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 	}
 %}
 
-NUMERIC				=
-CHAR				=
-BOOL				=
-SEQUENCE			=
-COMPARISON			=
+INT					=	int
+FLOAT				=	float
+CHAR				=	char
+BOOL				=	bool
+SEQUENCE			=	
+COMPARISON			=	
 
-SEQUENCEID			=
+SEQUENCEID			=	
 ID					=
 
 COMMENT				=
 
-TDEF				=
+TDEF				=	tdef
 FDEF				=	fdef
-VOID				=
-RETURN				=
-VAR					=
-IF					=
-ELSE				=
-WHILE				=
-DO					=
-REPEAT				=
-UNTIL				=
-BRACKETOPEN			=
-BRACKETCLOSE		=
-CURLYBRACKETOPEN	=
-CURLYBRACKETCLOSE	=
+VOID				=	void
+RETURN				=	return
+VAR					=	var
+IF					=	if
+ELSE				=	else
+WHILE				=	while
+DO					=	do
+REPEAT				=	repeat
+UNTIL				=	until
+BRACKETOPEN			=	(
+BRACKETCLOSE		=	)
+CURLYBRACKETOPEN	=	{
+CURLYBRACKETCLOSE	=	}
 
-
-
-
-
-WHITESPACE	=	[ \t\r\n]*
+WHITESPACE			=	[ \t\r\n\f]*
 
 %%
 
