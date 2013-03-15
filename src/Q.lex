@@ -47,19 +47,20 @@ import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
 
 WHITESPACE			=	[ \t\r\n\f\v]*
 
-INT					=	int
-FLOAT				=	float
-CHAR				=	char
-BOOL				=	bool
-SEQUENCE			=	
-COMPARISON			=	
-
-SEQUENCEID			=	
-ID					=
+DIGIT				= 	[0-9]
+INT					=	-?{DIGIT}+
+FLOAT				=	-?{DIGIT}.{DIGIT}+
+CHAR				=	\' [{DIGIT}[a-zA-Z][\p{P}]] \' 
+BOOL				=	true|false
+STRING				=	\"{char}+\"
+COMPARISON			= 	<|<=|>|>=|==|!=
+ID					=	[a-z][{CHAR}{DIGIT}]*
+TYPE				= 	bool|int|float|char|string|list|tuple
 
 LINECOMMENT			=	"//"[^\r\n]*[\r\n]
 MULTILINECOMMENT	=	"/*".+"*/"
-COMMENT				=	
+
+COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 
 TDEF				=	tdef
 FDEF				=	fdef
