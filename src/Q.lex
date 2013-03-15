@@ -58,7 +58,7 @@ SEQUENCEID			=
 ID					=
 
 LINECOMMENT			=	"//"[^\r\n]*[\r\n]
-MULTILINECOMMENT	=
+MULTILINECOMMENT	=	"/*".+"*/"
 COMMENT				=	
 
 TDEF				=	tdef
