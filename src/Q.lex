@@ -98,6 +98,11 @@ COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 "until"				{	return sym(UNTIL);}
 "tdef"				{	return sym(TDEF);}
 "fdef"				{	return sym(FDEF);}
-{IDENT}					{	return sym(ID);	}
+{IDENT}				{	return sym(ID);	}
+{CHAR}				{ 	return sym(CHAR); }
+{BOOL}				{	return sym(BOOL); }
+{INT}				{	return sym(INT);	}
+{FLOAT}				{	return sym(FLOAT);	}
+
 
 {WHITESPACE}		{ /* ignore whitespace*/ }
