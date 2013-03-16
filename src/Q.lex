@@ -49,7 +49,7 @@ WHITESPACE			=	[ \t\r\n\f\v]*
 
 DIGIT				= 	[0-9]
 INT					=	-?{DIGIT}+
-FLOAT				=	-?{DIGIT}.{DIGIT}+
+FLOAT				=	-?{DIGIT}+\.{DIGIT}+
 CHAR				=	\' [a-zA-Z0-9,!@#$%&\^\*\(\)] \' 
 BOOL				=	true|false
 STRING				=	\"{char}+\"
@@ -103,8 +103,8 @@ COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 {TYPE}				{	return sym(TYPE);				}
 {BOOL}				{	return sym(BOOL); 				}
 {CHAR}				{ 	return sym(CHAR); 				}
-{INT}				{	return sym(INT);				}
 {FLOAT}				{	return sym(FLOAT);				}
+{INT}				{	return sym(INT);				}
 {ID}				{	return sym(ID);					}
 
 
