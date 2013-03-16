@@ -50,9 +50,10 @@ WHITESPACE			=	[ \t\r\n\f\v]*
 DIGIT				= 	[0-9]
 INT					=	-?{DIGIT}+
 FLOAT				=	-?{DIGIT}+\.{DIGIT}+
-CHAR				=	\' [a-zA-Z0-9,!@#$%&\^\*\(\)] \' 
+CHARACTER			= 	[ a-zA-Z0-9,!@#$%_&+\-\^\*\(\)]
+CHAR				=	\' {CHARACTER} \' | \" {CHARACTER} \"
 BOOL				=	true|false
-STRING				=	\"{char}+\"
+STRING				=	\"{CHARACTER}*\"
 COMPARISON			= 	<|<=|>|>=|==|!=
 ID					=	[a-z] [:jletterdigit:]*
 TYPE				= 	bool|int|float|char|string|list|tuple
@@ -83,6 +84,7 @@ COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 ";"					{	return sym(SEMICOLON);			}
 ":"					{	return sym(COLON);				}
 ","					{	return sym(COMMA);				}
+"."					{	return sym(DOT);				}
 "("					{	return sym(BRACKETOPEN);		}	
 ")"					{	return sym(BRACKETCLOSE);		}
 "["					{	return sym(SQUAREBRACKETOPEN);	}
@@ -103,6 +105,7 @@ COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 {TYPE}				{	return sym(TYPE);				}
 {BOOL}				{	return sym(BOOL); 				}
 {CHAR}				{ 	return sym(CHAR); 				}
+{STRING}			{ 	return sym(STRING); 			}
 {FLOAT}				{	return sym(FLOAT);				}
 {INT}				{	return sym(INT);				}
 {ID}				{	return sym(ID);					}

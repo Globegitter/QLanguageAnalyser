@@ -11,23 +11,34 @@ import uk.ac.ucl.comp2010.bestgroup.*;
 public class ScannerTest {
 	
 	public static void main(String[] args) throws Exception {
-		System.out.println("Testing Scanner:\n");
+		System.out.print("Testing Scanner:");
 		//QLex scanner = new QLex(new StringReader("Test String"));
-		QLex scanner = new QLex(new FileReader("./testfiles/test01"));
-		
-		
-		
-		Field[] tokenFields = QSym.class.getFields();
-		while(true) {
-			Symbol w = scanner.next_token();
-			if(w.value == null) break;
+		int nrTests = 5;
+		for (int i = 1; i <= nrTests; i++) {
+			int linebreak = 0;
+			System.out.println();
+			System.out.println();
+			System.out.println("--------Running now test 0" + i + "--------");
+			System.out.println();
+			QLex scanner = new QLex(new FileReader("./testfiles/test0" + i));
 			
-			for(Field field: tokenFields) {
-				if(w.sym == (int) field.get(QSym.class)) {
-					System.out.println(field.getName() + ":	" + w.value);
+			Field[] tokenFields = QSym.class.getFields();
+			while(true) {
+				Symbol w = scanner.next_token();
+				if(w.value == null) break;
+				
+				for(Field field: tokenFields) {
+					if(w.sym == (int) field.get(QSym.class)) {
+						System.out.print(field.getName() + ": " + w.value + "\t");
+						linebreak++;
+						if(linebreak == 5){
+							System.out.println();
+							linebreak = 0;
+						}
+					}
 				}
 			}
-		}
+		}		
 	}
 
 }
