@@ -89,6 +89,8 @@ COMMENT				=	{LINECOMMENT} | {MULTILINECOMMENT}
 "]"					{	return sym(SQUAREBRACKETCLOSE);	}
 "{"					{	return sym(CURLYBRACKETOPEN);	}
 "}"					{	return sym(CURLYBRACKETCLOSE);	}
+"[|"				{	return sym(TUPLELEFT);	}
+"|]"				{	return sym(TUPLERIGHT);	}
 "if"				{	return sym(IF);}
 "else"				{ 	return sym(ELSE);}
 "return"			{	return sym(RETURN);}
