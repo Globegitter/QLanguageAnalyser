@@ -1,16 +1,70 @@
 package uk.ac.ucl.comp2010.bestgroup;
 
 import java_cup.runtime.*;
+import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
-terminal		TYPE, INT, FLOAT, CHAR, STRING, BOOL, ID, SEMICOLON, COMMA, COLON, DOT,
+terminal		String ID;
+terminal		String TYPE;
+
+terminal		boolean BOOL;
+terminal		int INT;
+terminal		FLOAT, CHAR, STRING, SEMICOLON, COMMA, COLON, DOT,
 				BRACKETOPEN, BRACKETCLOSE, SQUAREBRACKETOPEN, SQUAREBRACKETCLOSE, CURLYBRACKETOPEN, CURLYBRACKETCLOSE,
 				TUPLELEFT, TUPLERIGHT,
 				TDEF, FDEF, VOID, RETURN, IF, ELSE, WHILE, DO, REPEAT, UNTIL, IN,
 				PLUS, MINUS, TIMES, DIVIDE, POWER, AND, OR, NOT, 
 				EQUALSCOMPARISON, EQUALS, LESS, GREATER, LESSEQUALS, GREATEREQUALS;
 
-non terminal	expr;
+non terminal	ProgramNode program;
+non terminal	DecListNode declist;
+non terminal	DecNode dec;
+non terminal	VarDefNode vardef;
+non terminal	FDefNode fdef;
+non terminal	ArgListNode arglist;
+non terminal	ArgListNode nonemptyarglist;
+non terminal	TDefNode tdef;
+non terminal	statementlist, statement, literal, list, tuple;
 
-expr			::=	ID expr
-				| ID
-				;
+program			::=	  declist:d CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
+					{: RESULT = new ProgramNode(d,s); :};
+					
+declist			::=   dec:d declist:r {: RESULT = new DecListNode(d,r); :}
+				    | {: RESULT = null; :}
+					;
+					
+dec				::=   vardef:d {: RESULT = d; :}
+					| fdef:d {: RESULT = d; :}
+					| tdef:d {: RESULT = d; :}
+					;
+
+vardef			::=   ID:id COLON TYPE:t EQUALS literal:v SEMICOLON {: RESULT = new VarDefNode(id, t, v); :}
+					| ID:id COLON TYPE:t SEMICOLON {: RESULT = new VarDefNode(id, t); :}
+					; 
+					
+fdef			::=   FDEF ID:id BRACKETOPEN arglist:args BRACKETCLOSE COLON TYPE:t CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
+					{: RESULT = new FDefNode(id, args, t); :}
+					; 
+
+nonemptyarglist	::=   ID:id COLON TYPE:t COMMA nonemptyarglist:r {: RESULT = new ArgListNode(new ArgNode(id, t), r); :}
+					| ID:id COLON TYPE:t {: RESULT = new ArgListNode(new ArgNode(id, t), null); :}
+					; 
+					
+arglist			::=	  nonemptyarglist:args {: RESULT = args; :}
+					| {:RESULT = new ArgListNode(); :}		
+					;		
+					
+tdef			::=	TDEF ID:id COLON arglist:fields SEMICOLON
+					{: RESULT = new TDefNode(id, fields); 
+					   ((QLex) parser.getScanner()).addType(id); :}  
+					;		
+										
+literal			::=   BOOL:v {: RESULT = v; :}
+					| INT:v {: RESULT = v; :}
+					| FLOAT:v {: RESULT = v; :}
+					| CHAR:v {: RESULT = v; :}
+					| STRING:v {: RESULT = v; :}
+					| list | tuple;
+					
+statementlist		::=   statement statementlist
+					|
+					;
