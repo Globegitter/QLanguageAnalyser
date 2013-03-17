@@ -63,7 +63,7 @@ TRUE				=	true
 FALSE				=	false
 STRING				=	\"{CHARACTER}*\"
 COMPARISON			= 	<|<=|>|>=|==|!=
-ID					=	[a-z] [:jletterdigit:]*
+ID					=	[a-zA-Z] [:jletterdigit:]*
 TYPE				= 	bool|int|float|char|string|list|tuple
 
 LINECOMMENT			=	"//"[^\r\n]*[\r\n]
@@ -96,6 +96,7 @@ ANY					=	.|[ \t\r\n\f\v]
 	"="					{	return sym(EQUALS);				}
 	";"					{	return sym(SEMICOLON);			}
 	":"					{	return sym(COLON);				}
+	":"					{	return sym(CONCAT);				}
 	","					{	return sym(COMMA);				}
 	"."					{	return sym(DOT);				}
 	"("					{	return sym(BRACKETOPEN);		}	
@@ -125,7 +126,7 @@ ANY					=	.|[ \t\r\n\f\v]
 	{ID}				{	if(extraTypes.indexOf(yytext())==-1)
 								return sym(ID);				
 							else
-								return sym(TYPE);
+								return sym(CUSTOMTYPE);
 						}
 						
 	"/*"				{ 	yybegin(COMMENT);}						

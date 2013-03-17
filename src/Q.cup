@@ -2,34 +2,59 @@ package uk.ac.ucl.comp2010.bestgroup;
 
 import java_cup.runtime.*;
 import uk.ac.ucl.comp2010.bestgroup.AST.*;
+import java.util.LinkedList;
 
 terminal		String ID;
 terminal		String TYPE;
-
+terminal		String CUSTOMTYPE;
 terminal		boolean BOOL;
 terminal		int INT;
-terminal		FLOAT, CHAR, STRING, SEMICOLON, COMMA, COLON, DOT,
+terminal		float FLOAT;
+terminal		char CHAR;
+terminal		String STRING;
+terminal		SEMICOLON, COMMA, COLON, CONCAT, DOT,
 				BRACKETOPEN, BRACKETCLOSE, SQUAREBRACKETOPEN, SQUAREBRACKETCLOSE, CURLYBRACKETOPEN, CURLYBRACKETCLOSE,
 				TUPLELEFT, TUPLERIGHT,
-				TDEF, FDEF, VOID, RETURN, IF, ELSE, WHILE, DO, REPEAT, UNTIL, IN,
+				TDEF, FDEF, VOID, RETURN, IF, ELSE, WHILE, DO, REPEAT, UNTIL, IN, LEN,
 				PLUS, MINUS, TIMES, DIVIDE, POWER, AND, OR, NOT, 
 				EQUALSCOMPARISON, EQUALS, LESS, GREATER, LESSEQUALS, GREATEREQUALS;
 
 non terminal	ProgramNode program;
-non terminal	DecListNode declist;
+non terminal	LinkedList<DecNode> declist;
 non terminal	DecNode dec;
 non terminal	VarDefNode vardef;
+non terminal	String ftype;
 non terminal	FDefNode fdef;
-non terminal	ArgListNode arglist;
-non terminal	ArgListNode nonemptyarglist;
+non terminal	LinkedList<ArgNode> arglist;
+non terminal	LinkedList<ArgNode> nonemptyarglist;
 non terminal	TDefNode tdef;
-non terminal	statementlist, statement, literal, list, tuple;
+non terminal	String type;
+non terminal	LinkedList<ExprNode> exprlist;
+non terminal	ListNode list;
+non terminal	TupleNode tuple; 
+non terminal	ExprNode expr;
+non terminal	StatementNode statement;
+non terminal	LinkedList<StatementNode> statementlist;
+nonterminal		FunctionCallNode functioncall;
+
+precedence left AND;
+precedence left OR;
+precedence left NOT;
+precedence left EQUALSCOMPARISON;
+precedence left GREATER, LESS, GREATEREQUALS, LESSEQUALS;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+precedence left POWER;
+precedence left IN;
+precedence left CONCAT;
+
+
 
 program			::=	  declist:d CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
 					{: RESULT = new ProgramNode(d,s); :};
 					
-declist			::=   dec:d declist:r {: RESULT = new DecListNode(d,r); :}
-				    | {: RESULT = null; :}
+declist			::=   dec:d declist:r {: r.addFirst(d); RESULT = r; :}
+				    | {: RESULT = new LinkedList<DecNode>(); :}
 					;
 					
 dec				::=   vardef:d {: RESULT = d; :}
@@ -37,34 +62,101 @@ dec				::=   vardef:d {: RESULT = d; :}
 					| tdef:d {: RESULT = d; :}
 					;
 
-vardef			::=   ID:id COLON TYPE:t EQUALS literal:v SEMICOLON {: RESULT = new VarDefNode(id, t, v); :}
-					| ID:id COLON TYPE:t SEMICOLON {: RESULT = new VarDefNode(id, t); :}
+vardef			::=   ID:id COLON type:t EQUALS expr:v SEMICOLON {: RESULT = new VarDefNode(id, t, v); :}
+					| ID:id COLON type:t SEMICOLON {: RESULT = new VarDefNode(id, t); :}
 					; 
-					
-fdef			::=   FDEF ID:id BRACKETOPEN arglist:args BRACKETCLOSE COLON TYPE:t CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
+
+ftype			::=   type:t {: RESULT = t; :}
+					| VOID {: RESULT = "void"; :}
+					;
+										
+fdef			::=   FDEF ID:id BRACKETOPEN arglist:args BRACKETCLOSE COLON ftype:t CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
 					{: RESULT = new FDefNode(id, args, t); :}
 					; 
 
-nonemptyarglist	::=   ID:id COLON TYPE:t COMMA nonemptyarglist:r {: RESULT = new ArgListNode(new ArgNode(id, t), r); :}
-					| ID:id COLON TYPE:t {: RESULT = new ArgListNode(new ArgNode(id, t), null); :}
+nonemptyarglist	::=   ID:id COLON type:t COMMA nonemptyarglist:r {: r.addFirst(new ArgNode(id,t)); RESULT = r; :}
+					| ID:id COLON type:t {: LinkedList<ArgNode> args = new LinkedList<ArgNode>(); args.addFirst(new ArgNode(id,t)); RESULT=args; :}
 					; 
 					
 arglist			::=	  nonemptyarglist:args {: RESULT = args; :}
-					| {:RESULT = new ArgListNode(); :}		
+					| {:RESULT = new LinkedList<ArgNode>(); :}		
 					;		
 					
 tdef			::=	TDEF ID:id COLON arglist:fields SEMICOLON
 					{: RESULT = new TDefNode(id, fields); 
 					   ((QLex) parser.getScanner()).addType(id); :}  
 					;		
-										
-literal			::=   BOOL:v {: RESULT = v; :}
-					| INT:v {: RESULT = v; :}
-					| FLOAT:v {: RESULT = v; :}
-					| CHAR:v {: RESULT = v; :}
-					| STRING:v {: RESULT = v; :}
-					| list | tuple;
 					
-statementlist		::=   statement statementlist
+type			::=   TYPE:t {: RESULT = t; :}
+					| CUSTOMTYPE:t {: RESULT = t; :}
+					;
+
+functioncall	::=   ID:id BRACKETOPEN exprlist:args BRACKETCLOSE {: RESULT = new FunctionCallNode(id, args); :}
+					;
+expr			::=   functioncall:f {: RESULT = f; :}
+					| LEN BRACKETOPEN ID:id BRACKETCLOSE {: RESULT = new LengthNode(id); :}
+					| expr:n IN expr:h {: RESULT = new InNode(n, h); :}
+					| BRACKETOPEN expr:e BRACKETCLOSE {: RESULT = e; :}
+					
+  					| INT:v {: RESULT = new IntNode(v); :}
+					| FLOAT:v {: RESULT = new FloatNode(v); :}
+					
+					| expr:l PLUS expr:r {: RESULT = new PlusNode(l,r); :}
+					| expr:l MINUS expr:r {: RESULT = new MinusNode(l,r); :}
+					| MINUS expr:e {: RESULT = new NegativeNode(e); :}
+					| expr:l TIMES expr:r {: RESULT = new TimesNode(l,r); :}
+					| expr:l DIVIDE expr:r {: RESULT = new DivideNode(l,r); :}
+					| expr:l POWER expr:r {: RESULT = new PowerNode(l,r); :}
+					
+					| expr:l LESSEQUALS expr:r {: RESULT = new LessEqualsNode(l,r); :}
+					| expr:l GREATEREQUALS expr:r {: RESULT = new GreaterEqualsNode(l,r); :}
+					| expr:l LESS expr:r {: RESULT = new LessNode(l,r); :}
+					| expr:l GREATER expr:r {: RESULT = new GreaterNode(l,r); :}
+					| expr:l EQUALSCOMPARISON expr:r {: RESULT = new EqualsNode(l,r); :}
+					
+					| BOOL:v {: RESULT = new BoolNode(v); :}
+					| expr:l OR expr:r {: RESULT = new OrNode(l,r); :}
+					| expr:l AND expr:r {: RESULT = new AndNode(l,r); :}
+					| NOT expr:e {: RESULT = new NotNode(e); :}
+					
+					| STRING:v {: RESULT = new StringNode(v); :}
+					| list:v   {: RESULT = v; :}
+					| tuple:v  {: RESULT = v; :}
+					
+					| CHAR:v {: RESULT = new CharNode(v); :}
+					
+					| expr:l CONCAT expr:r {: RESULT = new ConcatNode(l, r); :}
+					
+					| ID:id SQUAREBRACKETOPEN expr:i SQUAREBRACKETCLOSE {: RESULT = new IndexNode(id, i); :}
+					| ID:id SQUAREBRACKETOPEN expr:i COLON SQUAREBRACKETCLOSE {: RESULT = new IndexRangeNode(id, i, null); :}
+					| ID:id SQUAREBRACKETOPEN COLON expr:j SQUAREBRACKETCLOSE {: RESULT = new IndexRangeNode(id, null, j); :}
+					| ID:id SQUAREBRACKETOPEN expr:i COLON expr:j SQUAREBRACKETCLOSE {: RESULT = new IndexRangeNode(id, i, j); :}
+					
+					| ID:var DOT ID:field {: RESULT = new FieldNode(var, field); :}
+					;
+
+exprlist		::=   expr:e COMMA exprlist:r {: r.addFirst(e); RESULT = r; :}
+					| expr:e {: LinkedList<ExprNode> expressions = new LinkedList<ExprNode>(); expressions.addFirst(e); RESULT=expressions; :}
+					;
+
+list			::= SQUAREBRACKETOPEN exprlist:l SQUAREBRACKETCLOSE {: RESULT = new ListNode(l); :};
+
+tuple			::= TUPLELEFT exprlist:l TUPLERIGHT {: RESULT = new TupleNode(l); :};
+					
+statementlist	::=  statement statementlist
 					|
+					;
+					
+statement		::=   ID:id EQUALS expr:v SEMICOLON {: RESULT = new AssignmentNode(id,v); :}
+					| functioncall:f SEMICOLON {: RESULT = new FunctionCallStatementNode(f); :}
+					| IF BRACKETOPEN expr:c BRACKETCLOSE CURLYBRACKETOPEN statementlist:t CURLYBRACKETCLOSE ELSE CURLYBRACKETOPEN statementlist:f CURLYBRACKETCLOSE
+					{: RESULT = new IfNode(c, t, f); :}
+					| IF BRACKETOPEN expr:c BRACKETCLOSE CURLYBRACKETOPEN statementlist:t CURLYBRACKETCLOSE
+					{: RESULT = new IfNode(c, t); :}
+					| WHILE BRACKETOPEN expr:c BRACKETCLOSE DO CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
+					{: RESULT = new WhileNode(c, s); :}
+					| REPEAT CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE UNTIL BRACKETOPEN expr:c BRACKETCLOSE SEMICOLON
+					{: RESULT = new RepeatNode(s, c); :}
+					| RETURN expr:e
+					{: RESULT = new ReturnNode(e); :}
 					;

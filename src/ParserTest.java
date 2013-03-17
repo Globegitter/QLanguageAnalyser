@@ -1,3 +1,4 @@
+import java.io.FileReader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -11,20 +12,40 @@ import uk.ac.ucl.comp2010.bestgroup.AST.Node;
 public class ParserTest {
 
 	public static void main(String[] args) throws Exception {
-		String str = "tdef person: name:string, age:int; rawr:int = 4;fdef func(arg1:int, arg2:bool):person {}{}";
-		System.out.println("Testing string:\n" + str);
+		//String str = "tdef person: name:string, age:int; rawr:int = 4;fdef func(arg1:int, arg2:bool):person {}{}";
+		//System.out.println("Testing string:\n" + str);
 		
 		/*System.out.println("\nLexer outputs:");
 		ScannerTest.testString(str);*/
+		int nrTests = 5;
+		for (int i = 1; i <= nrTests; i++) {
+			System.out.println("\n\n\n--------Running now test 0" + i + "--------");
+			testFile("./testfiles/test0" + i);
+		}		
 		
-		System.out.println("\nParser outputs:");
-		QLex scanner = new QLex(new StringReader(str));
-		QCup parser = new QCup(scanner);
+		//System.out.println("\nParser outputs:");
+		//QLex scanner = new QLex(new StringReader(str));
+		//QCup parser = new QCup(scanner);
+	}
+	
+	public static void testParser(QCup parser) throws Exception {
 		Symbol parse_tree = parser.parse();
-		
 		displayTree(parse_tree.value, 0);
 	}
 	
+	public static void testFile(String fileName) throws Exception {
+		QLex scanner = new QLex(new FileReader(fileName));
+		QCup parser = new QCup(scanner);
+		testParser(parser);
+	}
+	
+	public static void testString(String str) throws Exception {
+		QLex scanner = new QLex(new StringReader(str));
+		QCup parser = new QCup(scanner);
+		testParser(parser);
+	}
+	
+		
 	public static void displayTree(Object node, int i) {
 		System.out.println(node.getClass().getSimpleName());
 		Field[] nodeFields = node.getClass().getDeclaredFields();
