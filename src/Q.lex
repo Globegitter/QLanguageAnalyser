@@ -17,23 +17,34 @@ import java.util.LinkedList;
 
 %public
 %final
-// %abstract
 
 %cupsym uk.ac.ucl.comp2010.bestgroup.QSym
 %cup
-// %cupdebug
+%cupdebug
 
 %init{
 	
 %init}
 
 %{
-	private LinkedList<String> extraTypes = new LinkedList<String>();
+	public String section = "Declarations";
 	
-	public void addType(String type) {
+	private LinkedList<String> extraTypes = new LinkedList<String>();
+	private LinkedList<String> extraFunctions = new LinkedList<String>();
+	
+	public boolean addType(String type) {
+		if(isType(type))
+			return false;
 		extraTypes.add(type);
+		return true;
 	}
 	
+	public boolean isType(String type) {
+		if(extraTypes.indexOf(type)==-1)
+			return false;
+		return true;
+	}
+		
 	private Symbol sym(int type)
 	{
 		return sym(type, yytext());
@@ -42,12 +53,6 @@ import java.util.LinkedList;
 	private Symbol sym(int type, Object value)
 	{
 		return new Symbol(type, yyline, yycolumn, value);
-	}
-
-	private void error()
-	throws IOException
-	{
-		throw new IOException("illegal text at line = "+yyline+", column = "+yycolumn+", text = '"+yytext()+"'");
 	}
 %}
 
@@ -62,7 +67,6 @@ CHAR				=	\' {CHARACTER} \' | \" {CHARACTER} \"
 TRUE				=	true
 FALSE				=	false
 STRING				=	\"{CHARACTER}*\"
-COMPARISON			= 	<|<=|>|>=|==|!=
 ID					=	[a-zA-Z] [:jletterdigit:]*
 TYPE				= 	bool|int|float|char|string|list|tuple
 
@@ -95,8 +99,8 @@ ANY					=	.|[ \t\r\n\f\v]
 	"in"				{	return sym(IN);					}
 	"="					{	return sym(EQUALS);				}
 	";"					{	return sym(SEMICOLON);			}
+	"::"				{	return sym(CONCAT);				}
 	":"					{	return sym(COLON);				}
-	":"					{	return sym(CONCAT);				}
 	","					{	return sym(COMMA);				}
 	"."					{	return sym(DOT);				}
 	"("					{	return sym(BRACKETOPEN);		}	
@@ -119,19 +123,21 @@ ANY					=	.|[ \t\r\n\f\v]
 	{TYPE}				{	return sym(TYPE);				}
 	{TRUE}				{	return sym(BOOL, true);			}
 	{FALSE}				{	return sym(BOOL, false);		}
-	{CHAR}				{ 	return sym(CHAR); 				}
-	{STRING}			{ 	return sym(STRING); 			}
-	{FLOAT}				{	return sym(FLOAT);				}
-	{INT}				{	return sym(INT, Integer.parseInt(yytext()));}
-	{ID}				{	if(extraTypes.indexOf(yytext())==-1)
-								return sym(ID);				
-							else
-								return sym(CUSTOMTYPE);
+	{CHAR}				{   char[] chars = yytext().toCharArray(); return sym(CHAR, chars[1]); 	}
+	{STRING}			{ 	return sym(STRING, yytext().substring(1, yytext().length()-1));		}
+	{FLOAT}				{	return sym(FLOAT, Float.parseFloat(yytext()));						}
+	{INT}				{	return sym(INT, Integer.parseInt(yytext()));						}
+	{ID}				{	if(isType(yytext())) {
+								return sym(CUSTOMTYPE);				
+							} else {
+								return sym(ID);
+							}
 						}
 						
 	"/*"				{ 	yybegin(COMMENT);}						
 	{WHITESPACE}		{ /* ignore whitespace*/ }
 	{LINECOMMENT}		{ /* ignore comments*/ }
+	{ANY}				{	System.err.println("Could not interpret character '" + yytext() + "' at line " + yyline + " (" + section + ")"); }   
 
 
 }

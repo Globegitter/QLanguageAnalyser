@@ -6,5 +6,6 @@ public class AssignmentNode extends StatementNode{
 	public AssignmentNode(String variable, ExprNode value) {
 		this.variable = variable;
 		this.value = value;
+		
 	}
 }
