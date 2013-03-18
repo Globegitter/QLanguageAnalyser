@@ -8,5 +8,5 @@ fdef sum(i:float, j:float) : float {
 
 
 {
-	id = 8;
+
 }
