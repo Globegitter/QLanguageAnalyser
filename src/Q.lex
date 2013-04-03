@@ -1,149 +1,152 @@
 package uk.ac.ucl.comp2010.bestgroup;
 
-import java_cup.runtime.*;
-import java.io.IOException;
-
-import uk.ac.ucl.comp2010.bestgroup.QSym;
-import static uk.ac.ucl.comp2010.bestgroup.QSym.*;
-import java.util.LinkedList;
-
 %%
 
 %class QLex
+%cupsym uk.ac.ucl.comp2010.bestgroup.QSym
 
 %unicode
+%cup
 %line
 %column
+%states INCOMMENT
 
-%public
-%final
-
-%cupsym uk.ac.ucl.comp2010.bestgroup.QSym
-%cup
-%cupdebug
-
-%init{
-	
-%init}
 
 %{
-	public String section = "Declarations";
-	
-	private LinkedList<String> extraTypes = new LinkedList<String>();
-	private LinkedList<String> extraFunctions = new LinkedList<String>();
-	
-	public boolean addType(String type) {
-		if(isType(type))
-			return false;
-		extraTypes.add(type);
-		return true;
-	}
-	
-	public boolean isType(String type) {
-		if(extraTypes.indexOf(type)==-1)
-			return false;
-		return true;
-	}
-		
-	private Symbol sym(int type)
-	{
-		return sym(type, yytext());
-	}
-
-	private Symbol sym(int type, Object value)
-	{
-		return new Symbol(type, yyline, yycolumn, value);
-	}
+	QHelper h;
+	public int getLine() { return yyline; }
+	public int getCol() {return yycolumn; }
+	private StringBuilder badinput = null;
 %}
 
+%init{
+	h = new QHelper(this);
+%init}
 
-WHITESPACE			=	[ \t\r\n\f\v]*
 
-DIGIT				= 	[0-9]
-INT					=	-?{DIGIT}+
-FLOAT				=	-?{DIGIT}+\.{DIGIT}+
-CHARACTER			= 	[ a-zA-Z0-9,!@#$%_&+\-\^\*\(\)]
-CHAR				=	\' {CHARACTER} \' | \" {CHARACTER} \"
-TRUE				=	true
-FALSE				=	false
-STRING				=	\"{CHARACTER}*\"
-ID					=	[a-zA-Z] [:jletterdigit:]*
-TYPE				= 	bool|int|float|char|string|list|tuple
+/* Macros */
 
-LINECOMMENT			=	"//"[^\r\n]*[\r\n]
+Whitespace = [\ \t\n\r]+
+NewLine = \r|\n|\r\n
 
-ANY					=	.|[ \t\r\n\f\v]
+LineComment = "//".*{NewLine}
 
-%state COMMENT
+Identifier = [:jletter:] [:jletterdigit:]*
+BooleanLiteral = "true" | "false"
+IntegerLiteral = ("-")?[:digit:]+
+FloatLiteral = ("-")?[:digit:]+\.[:digit:]+
+StringLiteral = "\"" ~"\"" 
+CharLiteral = "'"[:letter:]"'"
 
+%states ERROR
 
 %%
 
-
 <YYINITIAL> {
 
-	"!"					{	return sym(NOT);	 			}
-	"||"				{ 	return sym(OR); 	 			}
-	"&&"				{	return sym(AND);	 			}
-	"+"					{	return sym(PLUS);	 			}
-	"-"					{ 	return sym(MINUS); 				}
-	"*"					{	return sym(TIMES); 				}
-	"/"					{	return sym(DIVIDE);				}
-	"^"					{	return sym(POWER); 				}
-	"<="				{	return sym(LESSEQUALS);			}
-	">=" 				{ 	return sym(GREATEREQUALS);		}
-	"<"					{	return sym(LESS);  				}
-	">"					{	return sym(GREATER);			}
-	"=="				{	return sym(EQUALSCOMPARISON);	}
-	"!="				{	return sym(NOT);				}
-	"in"				{	return sym(IN);					}
-	"="					{	return sym(EQUALS);				}
-	";"					{	return sym(SEMICOLON);			}
-	"::"				{	return sym(CONCAT);				}
-	":"					{	return sym(COLON);				}
-	","					{	return sym(COMMA);				}
-	"."					{	return sym(DOT);				}
-	"("					{	return sym(BRACKETOPEN);		}	
-	")"					{	return sym(BRACKETCLOSE);		}
-	"[|"				{	return sym(TUPLELEFT);			}
-	"|]"				{	return sym(TUPLERIGHT);			}
-	"["					{	return sym(SQUAREBRACKETOPEN);	}
-	"]"					{	return sym(SQUAREBRACKETCLOSE);	}
-	"{"					{	return sym(CURLYBRACKETOPEN);	}
-	"}"					{	return sym(CURLYBRACKETCLOSE);	}
-	"if"				{	return sym(IF);					}
-	"else"				{ 	return sym(ELSE);				}
-	"return"			{	return sym(RETURN);				}
-	"while"				{	return sym(WHILE);				}
-	"do"				{	return sym(DO);					}
-	"repeat"			{	return sym(REPEAT);				}
-	"until"				{	return sym(UNTIL);				}
-	"tdef"				{	return sym(TDEF);				}
-	"fdef"				{	return sym(FDEF);				}
-	{TYPE}				{	return sym(TYPE);				}
-	{TRUE}				{	return sym(BOOL, true);			}
-	{FALSE}				{	return sym(BOOL, false);		}
-	{CHAR}				{   char[] chars = yytext().toCharArray(); return sym(CHAR, chars[1]); 	}
-	{STRING}			{ 	return sym(STRING, yytext().substring(1, yytext().length()-1));		}
-	{FLOAT}				{	return sym(FLOAT, Float.parseFloat(yytext()));						}
-	{INT}				{	return sym(INT, Integer.parseInt(yytext()));						}
-	{ID}				{	if(isType(yytext())) {
-								return sym(CUSTOMTYPE);				
-							} else {
-								return sym(ID);
-							}
-						}
-						
-	"/*"				{ 	yybegin(COMMENT);}						
-	{WHITESPACE}		{ /* ignore whitespace*/ }
-	{LINECOMMENT}		{ /* ignore comments*/ }
-	{ANY}				{	System.err.println("Could not interpret character '" + yytext() + "' at line " + yyline + " (" + section + ")"); }   
+{Whitespace} {}
+{LineComment} {}
 
+// Types
+"bool"				{return h.sym(QSym.BOOL); }
+"int"				  {return h.sym(QSym.INT); }
+"char"				{return h.sym(QSym.CHAR); }
+"float"				{return h.sym(QSym.FLOAT); }
+"string"			{return h.sym(QSym.STRING); }
+"list"				{return h.sym(QSym.LIST); }
+"void"				{return h.sym(QSym.VOID);}
 
+// Declarations
+"fdef"				{return h.sym(QSym.FDEF);}
+"tdef"				{return h.sym(QSym.TDEF);}
+
+// Operators
+
+// Logical Operators
+"\!"				{return h.sym(QSym.NOT); }
+"||"				{return h.sym(QSym.OR); }
+"&&"				{return h.sym(QSym.AND); }
+
+// Numerical Operators
+"\+"				{return h.sym(QSym.PLUS); }
+"-"					{return h.sym(QSym.MINUS); }
+"\*"				{return h.sym(QSym.MULTIPLY); }
+"/"					{return h.sym(QSym.DIVIDE); }
+"\^"				{return h.sym(QSym.POWER); }
+
+// Sequence Operators
+"::"				{return h.sym(QSym.CONCAT);}
+"in"				{return h.sym(QSym.IN); }
+"len"				{return h.sym(QSym.LENGTH); }
+
+// Comparison Operators
+"<"					{return h.sym(QSym.LESSTHAN); }
+"<="				{return h.sym(QSym.LESSTHANEQUAL); }
+">"					{return h.sym(QSym.GREATERTHAN); }
+">="				{return h.sym(QSym.GREATERTHANEQUAL); }
+"=="				{return h.sym(QSym.EQUAL); }
+"!="				{return h.sym(QSym.NOTEQUAL); }
+
+// Expression Operators
+"."					{return h.sym(QSym.DOT); }
+"="					{return h.sym(QSym.ASSIGN); }
+
+// Structural Tokens
+"{"					{return h.sym(QSym.LEFTBRACE); }
+"}"					{return h.sym(QSym.RIGHTBRACE); }
+"["					{return h.sym(QSym.LEFTBRACKET); }
+"]"					{return h.sym(QSym.RIGHTBRACKET); }
+"[|"				{return h.sym(QSym.LEFTTBRACKET); }
+"|]"				{return h.sym(QSym.RIGHTTBRACKET); }
+";"					{return h.sym(QSym.SEMICOLON); }
+":"					{return h.sym(QSym.COLON); }
+"("					{return h.sym(QSym.LEFTPAREN); }
+")"					{return h.sym(QSym.RIGHTPAREN); }
+","					{return h.sym(QSym.COMMA); }
+
+// Literals
+{CharLiteral}	    {return h.parseChar(yytext());}
+{BooleanLiteral}	{return h.parseBool(yytext());}
+{FloatLiteral}		{return h.parseFloat(yytext());}
+{IntegerLiteral}	{return h.parseInteger(yytext());}
+{StringLiteral}		{return h.parseString(yytext());}
+
+// Control Flow
+"if"  				{return h.sym(QSym.IF);}
+"else"				{return h.sym(QSym.ELSE);}
+"repeat"			{return h.sym(QSym.REPEAT);}
+"while"				{return h.sym(QSym.WHILE);}
+"do"  				{return h.sym(QSym.DO); }
+"until"				{return h.sym(QSym.UNTIL); }
+"return"			{return h.sym(QSym.RETURN); }
+
+// Identifier
+{Identifier}		{return h.sym(QSym.ID, yytext());}
+
+// Multiline Comment
+"/*"       { yybegin(INCOMMENT); }
+
+// Error Handling
+.					{ 
+						yybegin(ERROR);
+       			badinput = new StringBuilder(yytext()); 
+       		}
+}
+
+<INCOMMENT> {
+"*/"      { yybegin(YYINITIAL); }
+[^*\n]+   {} // eat comment in chunks
+"*"       {} // eat the lone star
+"\n"      {} 
 }
 
 
-<COMMENT> {
-	"*/"				{	yybegin(YYINITIAL);				}
-	{ANY}				{									}
-}	
+<ERROR> {
+[\{\}\(\);] | {Whitespace}
+					{
+						yypushback(1);
+						yybegin(YYINITIAL);
+						System.err.println("Error: unknown input " + badinput + " found at line " + yyline + ", character " + yycolumn);
+					}
+. 					{badinput.append(yytext());}
+}

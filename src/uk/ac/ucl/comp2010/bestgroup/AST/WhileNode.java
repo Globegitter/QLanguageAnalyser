@@ -4,10 +4,10 @@ import java.util.LinkedList;
 
 public class WhileNode extends StatementNode{
 	public ExprNode condition;
-	public LinkedList<StatementNode> statements;
-	
-	public WhileNode(ExprNode condition, LinkedList<StatementNode> statements) {
+	public BlockNode loop;
+		
+	public WhileNode(ExprNode condition, BlockNode loop) {
 		this.condition = condition;
-		this.statements = statements;
+		this.loop = loop;
 	}
 }

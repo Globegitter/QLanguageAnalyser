@@ -3,222 +3,260 @@ package uk.ac.ucl.comp2010.bestgroup;
 import java_cup.runtime.*;
 import uk.ac.ucl.comp2010.bestgroup.AST.*;
 import java.util.LinkedList;
-import java.lang.reflect.Field;
 
-parser code {:
-	public int errs = 0;
-	public void syntax_error(Symbol cur_token) {
-		report_error("Error parsing token type '" + getTokenName(cur_token) + "' at line " + (cur_token.left+1) + ", character " + (cur_token.right+1) + ":", cur_token);
-		errs ++;
-	}
-	
-	public String getTokenName(Symbol cur_token) {
-		Field[] tokenFields = QSym.class.getFields();
-		for(Field field: tokenFields) {
-			try{
-				if(cur_token.sym == (int) field.get(QSym.class)) {
-					return field.getName();
-				}
-			} catch (IllegalAccessException e) {}
-		}
-		return "";
-	}	
-:}
+terminal SEMICOLON, COMMA, DOT, COLON;
+terminal LEFTBRACE, RIGHTBRACE;
+terminal LEFTBRACKET, RIGHTBRACKET;
+terminal LEFTTBRACKET, RIGHTTBRACKET;
+terminal LEFTPAREN, RIGHTPAREN;
 
-action code {:
-		
-	public void err(String msg) {
-		System.err.println("Error in " + getSection() + ": " + msg);
-	}
-	
-	public String getSection() {
-		return ((QLex) parser.getScanner()).section;
-	}
-	
-	public void setSection(String value) {
-		((QLex) parser.getScanner()).section = value;
-	}
-	
-	public boolean addType(String type) {
-		return ((QLex) parser.getScanner()).addType(type);
-	}
-	
-	public boolean isType(String type) {
-		return ((QLex) parser.getScanner()).isType(type);
-	}
-:}
+terminal BOOL, INT, FLOAT, STRING, LIST, CHAR, TUPLE, VOID;
+terminal String ID;
+terminal String STRINGLITERAL;
+terminal boolean BOOLLITERAL;
+terminal int INTLITERAL;
+terminal float FLOATLITERAL;
+terminal char CHARLITERAL;
 
+terminal FDEF, TDEF;
 
-terminal		String ID;
-terminal		String TYPE;
-terminal		String CUSTOMTYPE;
-terminal		boolean BOOL;
-terminal		int INT;
-terminal		float FLOAT;
-terminal		char CHAR;
-terminal		String STRING;
-terminal		SEMICOLON, COMMA, COLON, CONCAT, DOT,
-				BRACKETOPEN, BRACKETCLOSE, SQUAREBRACKETOPEN, SQUAREBRACKETCLOSE, CURLYBRACKETOPEN, CURLYBRACKETCLOSE,
-				TUPLELEFT, TUPLERIGHT,
-				TDEF, FDEF, VOID, RETURN, IF, ELSE, WHILE, DO, REPEAT, UNTIL, IN, LEN,
-				PLUS, MINUS, TIMES, DIVIDE, POWER, AND, OR, NOT, 
-				EQUALSCOMPARISON, EQUALS, LESS, GREATER, LESSEQUALS, GREATEREQUALS;
-				
+terminal ASSIGN;
+terminal NOT, OR, AND;
+terminal PLUS, MINUS, MULTIPLY, DIVIDE, POWER;
+terminal IN, LENGTH, CONCAT;
+terminal LESSTHAN, LESSTHANEQUAL, GREATERTHAN, GREATERTHANEQUAL, EQUAL, NOTEQUAL;
 
-non terminal	ProgramNode			program;
-non terminal	BodyNode 			body;
-non terminal	LinkedList<DecNode> declist;
-non terminal	DecNode 			dec;
-non terminal	VarDefNode 			vardef;
-non terminal	String				ftype;
-non terminal	FDefNode 			fdef;
-non terminal	LinkedList<ArgNode> arglist;
-non terminal	LinkedList<ArgNode> nonemptyarglist;
-non terminal	TDefNode 			tdef;
-non terminal	String 				type;
-non terminal	LinkedList<ExprNode> exprlist;
-non terminal	ListNode 			list;
-non terminal	TupleNode 			tuple; 
-non terminal	ExprNode 			expr;
-non terminal	StatementNode 		statement;
-non terminal	LinkedList<StatementNode> statementlist;
+terminal IF, ELSE, REPEAT, UNTIL, RETURN, DO, WHILE;
 
-precedence nonassoc SEMICOLON;
-precedence nonassoc IN;
-precedence left SQUAREBRACKETOPEN, SQUAREBRACKETCLOSE;
-precedence left CONCAT;
-precedence left AND;
-precedence left OR;
-precedence left NOT;
-precedence left EQUALSCOMPARISON;
-precedence left GREATER, LESS, GREATEREQUALS, LESSEQUALS;
+non terminal String type;
+non terminal AccessorNode accessor;
+non terminal ExprNode expression, term, factor, exponent, final;
+non terminal FuncCallExprNode function_call;
+non terminal SequenceNode sequence;
+non terminal LinkedList<ExprNode> list, tuple;
+non terminal LinkedList<ExprNode> expression_clist, expression_clist2;
+non terminal VarDeclNode var_decl;
+non terminal LinkedList<ExprNode> var_init;
+non terminal VarTypeNode var_type;
+
+non terminal String function_type;
+non terminal FuncDeclNode function_decl;
+non terminal LinkedList<VarTypeNode> parameter_clist, parameter_clist2;
+
+non terminal LinkedList<DeclNode> global_decl_list, local_decl_list;
+non terminal DeclNode global_decl;
+non terminal DatatypeDeclNode datatype_decl;
+
+non terminal BlockNode block;
+non terminal LinkedList<StatementNode> statement_list;
+non terminal StatementNode statement;
+non terminal StatementNode if, ifelse, repeatuntil, while, assignment, return;
+non terminal ProgramNode program;
+
+precedence right POWER;
+precedence left DIVIDE, MULTIPLY;
 precedence left PLUS, MINUS;
-precedence left TIMES, DIVIDE;
-precedence left POWER;
-precedence left COLON;
-precedence nonassoc ID;
 
-program			::=	   declist:d CURLYBRACKETOPEN body:b CURLYBRACKETCLOSE {: RESULT = new ProgramNode(d,b); :};
+precedence nonassoc NOT;
+precedence left OR, AND;
+precedence right IN;
+precedence nonassoc LESSTHAN, LESSTHANEQUAL, GREATERTHAN, GREATERTHANEQUAL, EQUAL, NOTEQUAL;
 
-body			::=	   declist:d statementlist:s 					{: setSection("Body"); RESULT = new BodyNode(d,s); :};
-					
-declist			::=    dec:d declist:r 								{: r.addFirst(d); RESULT = r; :}
-				    | 												{: RESULT = new LinkedList<DecNode>(); :}
-					;
-					
-dec				::=   vardef:d 	{: RESULT = d; :}
-					| fdef:d 	{: RESULT = d; :}
-					| tdef:d 	{: RESULT = d; :}
-					;
+start with program;
 
-vardef			::=   ID:id COLON type:t EQUALS expr:v SEMICOLON 	{: RESULT = new VarDefNode(id, t, v); :}
-					| ID:id COLON type:t SEMICOLON 					{: RESULT = new VarDefNode(id, t); :}
-					; 
+type ::=
+BOOL {: RESULT = "bool"; :}
+| INT {: RESULT = "int"; :}
+| FLOAT {: RESULT = "float"; :}
+| STRING {: RESULT = "string"; :}
+| CHAR {: RESULT = "char"; :}
+| LIST {: RESULT = "list"; :}
+| TUPLE {: RESULT = "tuple"; :}
+| ID:id {: RESULT = id; :}
+;
 
-type			::=   TYPE:t 										{: RESULT = t; :}
-					| CUSTOMTYPE:t 									{: RESULT = t; :}
-					;
-					
-ftype			::=   type:t 		{: RESULT = t; :}
-					| VOID 			{: RESULT = "void"; :}
-					;
-										
-fdef			::=   FDEF ID:id BRACKETOPEN arglist:args BRACKETCLOSE COLON ftype:t CURLYBRACKETOPEN body:b CURLYBRACKETCLOSE
-																	{: RESULT = new FDefNode(id, args, t, b); :}
-					; 
+program ::= 
+global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); System.out.println("Parsing Complete"); :}
+| block:block 							{: RESULT = new ProgramNode(block); System.out.println("Parsing Complete"); :}
+;
 
+global_decl_list ::= 
+global_decl_list:decl_list global_decl:decl {: RESULT = decl_list; RESULT.addLast(decl); :} 
+| global_decl:decl 							{: RESULT = new LinkedList<DeclNode>(); RESULT.addFirst(decl); :}
+;
 
-nonemptyarglist	::=   ID:id COLON type:t COMMA nonemptyarglist:r 	{: r.addFirst(new ArgNode(id,t)); RESULT = r; :}
-					| ID:id COLON type:t 							{: RESULT = new LinkedList<ArgNode>(); RESULT.addFirst(new ArgNode(id,t)); :}
-					; 
-					
-arglist			::=	  nonemptyarglist:args							{: RESULT = args; :}
-					| 												{:RESULT = new LinkedList<ArgNode>(); :}		
-					;		
-					
-tdef			::=	TDEF ID:id COLON arglist:fields SEMICOLON		{: if(addType(id)) { RESULT = new TDefNode(id, fields); } else { err("Cannot declare type \"" + id + "\". Already exists?"); } :}  
-					;		
-					
+global_decl ::= 
+datatype_decl:decl	 {: RESULT = decl; :}
+| var_decl:decl		 {: RESULT = decl; :}
+| function_decl:decl {: RESULT = decl; :}
+;
 
-expr			::= | ID:id BRACKETOPEN exprlist:args BRACKETCLOSE {: RESULT = new FunctionCallNode(id, args); :}
+function_decl ::= 
+FDEF ID:id LEFTPAREN parameter_clist:param_list RIGHTPAREN COLON function_type:type block:body {:RESULT = new FuncDeclNode(id, param_list, type, body); :}
+;
 
-					| LEN BRACKETOPEN ID:id BRACKETCLOSE 	{: RESULT = new LengthNode(id); :}
-					| expr:n IN expr:h						{: RESULT = new InNode(n, h); :}
-					| BRACKETOPEN expr:e BRACKETCLOSE 		{: RESULT = e; :}
-					
-  					| INT:v 								{: RESULT = new IntNode(v); :}
-					| FLOAT:v 								{: RESULT = new FloatNode(v); :}
-					
-					| expr:l PLUS expr:r 					{: RESULT = new PlusNode(l,r); :}
-					| expr:l MINUS expr:r 					{: RESULT = new MinusNode(l,r); :}
-					| MINUS expr:e							{: RESULT = new NegativeNode(e); :}
-					| expr:l TIMES expr:r 					{: RESULT = new TimesNode(l,r); :}
-					| expr:l DIVIDE expr:r 					{: RESULT = new DivideNode(l,r); :}
-					| expr:l POWER expr:r 					{: RESULT = new PowerNode(l,r); :}
-					
-					| expr:l LESSEQUALS expr:r 				{: RESULT = new LessEqualsNode(l,r); :}
-					| expr:l GREATEREQUALS expr:r 			{: RESULT = new GreaterEqualsNode(l,r); :}
-					| expr:l LESS expr:r 					{: RESULT = new LessNode(l,r); :}
-					| expr:l GREATER expr:r 				{: RESULT = new GreaterNode(l,r); :}
-					| expr:l EQUALSCOMPARISON expr:r 		{: RESULT = new EqualsNode(l,r); :}
-					
-					| BOOL:v 								{: RESULT = new BoolNode(v); :}
-					| expr:l OR expr:r 						{: RESULT = new OrNode(l,r); :}
-					| expr:l AND expr:r 					{: RESULT = new AndNode(l,r); :}
-					| NOT expr:e 							{: RESULT = new NotNode(e); :}
-					
-					| STRING:v {: RESULT = new StringNode(v); :}
-					| list:v   {: RESULT = v; :}
-					| tuple:v  {: RESULT = v; :}
-					
-					| CHAR:v {: RESULT = new CharNode(v); :}
-					
-					| expr:l CONCAT expr:r {: RESULT = new ConcatNode(l, r); :}
-					
-					| ID:id SQUAREBRACKETOPEN expr:i SQUAREBRACKETCLOSE 					{: RESULT = new IndexNode(id, i); :} 
-					| ID:id SQUAREBRACKETOPEN expr:i COLON SQUAREBRACKETCLOSE 				{: RESULT = new IndexRangeNode(id, i, null); :}
-					| ID:id SQUAREBRACKETOPEN COLON expr:j SQUAREBRACKETCLOSE 				{: RESULT = new IndexRangeNode(id, null, j); :}
-					| ID:id SQUAREBRACKETOPEN expr:i COLON expr:j SQUAREBRACKETCLOSE 		{: RESULT = new IndexRangeNode(id, i, j); :}
-					
-					| ID:var DOT ID:field 					{: RESULT = new FieldNode(var, field); :}
-					
-					| ID:var 								{: RESULT = new VarExprNode(var); :}
-					;
+var_type ::= 
+ID:id COLON type:type {: RESULT = new VarTypeNode(id, type); :}
+; 
 
+var_decl ::= 
+var_type:var_type var_init:var_init SEMICOLON {: RESULT = new VarDeclNode(var_type, var_init); :};
 
-exprlist		::= expr:e COMMA exprlist:r 		{: r.addFirst(e); RESULT = r; :}
-					| 								{: RESULT = new LinkedList<ExprNode>(); :}
-					;
+var_init ::=
+ASSIGN expression_clist:expr_list {: RESULT = expr_list; :} 
+|
+;
 
+datatype_decl ::=
+TDEF ID:id COLON parameter_clist:param_list SEMICOLON {: RESULT = new DatatypeDeclNode(id, param_list); :}
+;
 
-list			::= SQUAREBRACKETOPEN exprlist:l SQUAREBRACKETCLOSE {: RESULT = new ListNode(l); :};
+function_type ::= 
+VOID 		{: RESULT = "void"; :}
+| type:type	{: RESULT = type; :}
+;
 
+//two-productions are needed to avoid ambiguity
+parameter_clist ::= 
+var_type:param parameter_clist2:param_list	{: RESULT = param_list; RESULT.addFirst(param); :} 
+|											{: RESULT = new LinkedList<VarTypeNode>(); :}
+;
 
-tuple			::= TUPLELEFT exprlist:l TUPLERIGHT {: RESULT = new TupleNode(l); :};
+parameter_clist2 ::= 
+COMMA var_type:param parameter_clist2:param_list 	{: RESULT = param_list; RESULT.addFirst(param); :}
+|													{: RESULT = new LinkedList<VarTypeNode>(); :}
+;
 
+block ::= 
+LEFTBRACE local_decl_list:decl_list statement_list:statement_list RIGHTBRACE 	{: RESULT = new BlockNode(decl_list, statement_list); :}
+| LEFTBRACE statement_list:statement_list RIGHTBRACE							{: RESULT = new BlockNode(statement_list); :}
+;
 
-statementlist	::= statement:s statementlist:r 	{: r.addFirst(s); RESULT = r; :}
-					| 								{: RESULT = new LinkedList<StatementNode>(); :}
-					;
+// Local declaration only allows variable declarations
+local_decl_list ::= 
+local_decl_list:decl_list var_decl:decl		{: RESULT = decl_list; RESULT.addLast(decl); :}
+| var_decl:decl								{: RESULT = new LinkedList<DeclNode>(); RESULT.addFirst(decl); :}
+;
 
-					
-statement		::=   ID:id EQUALS expr:v SEMICOLON 							{: RESULT = new AssignmentNode(id,v); :}
+statement_list ::= 
+statement:statement statement_list:statement_list 	{: RESULT = statement_list; RESULT.addFirst(statement); :}
+|													{: RESULT = new LinkedList<StatementNode>(); :}
+;
 
-					| ID:id BRACKETOPEN exprlist:args BRACKETCLOSE SEMICOLON 	{: RESULT = new FunctionCallStatementNode( new FunctionCallNode(id, args)); :}
-					
-					| IF BRACKETOPEN expr:c BRACKETCLOSE CURLYBRACKETOPEN statementlist:t CURLYBRACKETCLOSE ELSE CURLYBRACKETOPEN statementlist:f CURLYBRACKETCLOSE
-																				{: RESULT = new IfNode(c, t, f); :}
-																				
-					| IF BRACKETOPEN expr:c BRACKETCLOSE CURLYBRACKETOPEN statementlist:t CURLYBRACKETCLOSE
-																				{: RESULT = new IfNode(c, t); :}
-																				
-					| WHILE BRACKETOPEN expr:c BRACKETCLOSE DO CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE
-																				{: RESULT = new WhileNode(c, s); :}
-																				
-					| REPEAT CURLYBRACKETOPEN statementlist:s CURLYBRACKETCLOSE UNTIL BRACKETOPEN expr:c BRACKETCLOSE SEMICOLON
-																				{: RESULT = new RepeatNode(s, c); :}
-																				
-					| RETURN expr:e SEMICOLON									{: RESULT = new ReturnNode(e); :}
-					
-					| RETURN SEMICOLON											{: RESULT = new ReturnNode(null); :}
-					;
+statement ::= 
+assignment:stmt					{: RESULT = stmt; :}
+| function_call:call SEMICOLON	{: RESULT = new FuncCallStmtNode(call.id, call.args); :}
+| ifelse:stmt					{: RESULT = stmt; :} 
+| if:stmt						{: RESULT = stmt; :}
+| while:stmt					{: RESULT = stmt; :}				
+| repeatuntil:stmt				{: RESULT = stmt; :}
+| return:stmt					{: RESULT = stmt; :}
+;
+
+ifelse ::= 
+IF LEFTPAREN expression:condition RIGHTPAREN block:true_block ELSE block:false_block {: RESULT = new IfNode(condition, true_block, false_block); :}
+;
+
+if ::= 
+IF LEFTPAREN expression:condition RIGHTPAREN block:true_block {: RESULT = new IfNode(condition, true_block); :}
+;
+
+while ::=
+WHILE LEFTPAREN expression:condition RIGHTPAREN DO block:loop {: RESULT = new WhileNode(condition, loop); :}
+;
+
+repeatuntil ::= 
+REPEAT block:loop UNTIL LEFTPAREN expression:condition RIGHTPAREN SEMICOLON {: RESULT = new RepeatNode(loop, condition); :} 
+;
+
+function_call ::=
+ID:id LEFTPAREN expression_clist:expr_list RIGHTPAREN {: RESULT = new FuncCallExprNode(id, expr_list); :} 
+;
+
+return ::= 
+RETURN expression:expr SEMICOLON	{: RESULT = new ReturnNode(expr); :}
+| RETURN SEMICOLON					{: RESULT = new ReturnNode(); :}
+;
+
+assignment ::= 
+accessor:accessor ASSIGN expression:expr SEMICOLON	{: RESULT = new AssignmentNode(accessor, expr); :}
+;
+
+sequence ::=
+STRINGLITERAL:str	{: RESULT = new SequenceNode(str);:}
+| tuple:seq			{: RESULT = new SequenceNode(seq); :}
+| list:seq			{: RESULT = new SequenceNode(seq); :}
+;
+
+accessor ::= 
+ID:id						{: RESULT = new AccessorNode(id); :}
+| accessor:parent DOT ID:id	{: RESULT = new AccessorNode(parent, id); :} 
+;
+
+tuple ::=
+LEFTTBRACKET expression_clist:expr_list RIGHTTBRACKET {: RESULT = expr_list; :}
+;
+
+list ::= 
+LEFTBRACKET expression_clist:expr_list RIGHTBRACKET {: RESULT = expr_list; :}
+;
+
+expression_clist ::= 
+expression:expr expression_clist2:expr_list {: RESULT = expr_list; RESULT.addFirst(expr); :}
+|											{: RESULT = new LinkedList<ExprNode>(); :}
+;
+
+expression_clist2 ::= 
+COMMA expression:expr expression_clist2:expr_list 	{: RESULT = expr_list; RESULT.addFirst(expr); :}
+|													{: RESULT = new LinkedList<ExprNode>(); :}
+;
+
+expression ::=
+term:e							{: RESULT = e; :}
+| NOT expression:e				{: RESULT = new ExprOperationNode(QSym.NOT, e); :}
+| expression:e1 PLUS term:e2	{: RESULT = new ExprOperationNode(QSym.PLUS, e1, e2); :}
+| expression:e1 MINUS term:e2	{: RESULT = new ExprOperationNode(QSym.MINUS, e1, e2); :}
+| expression:e1 OR term:e2		{: RESULT = new ExprOperationNode(QSym.OR, e1, e2); :}
+| expression:e1 IN term:e2		{: RESULT = new ExprOperationNode(QSym.IN, e1, e2); :}
+| expression:e1 LESSTHAN term:e2{: RESULT = new ExprOperationNode(QSym.LESSTHAN, e1, e2); :}
+| expression:e1 LESSTHANEQUAL term:e2	{: RESULT = new ExprOperationNode(QSym.LESSTHANEQUAL, e1, e2); :}
+| expression:e1 GREATERTHAN term:e2		{: RESULT = new ExprOperationNode(QSym.GREATERTHAN, e1, e2); :}
+| expression:e1 GREATERTHANEQUAL term:e2{: RESULT = new ExprOperationNode(QSym.GREATERTHANEQUAL, e1, e2); :}
+| expression:e1 EQUAL term:e2			{: RESULT = new ExprOperationNode(QSym.EQUAL, e1, e2); :}
+| expression:e1 NOTEQUAL term:e2		{: RESULT = new ExprOperationNode(QSym.NOTEQUAL, e1, e2); :}
+| expression:e1 CONCAT term:e2			{: RESULT = new ExprOperationNode(QSym.CONCAT, e1, e2); :}
+| expression:e1 LEFTBRACKET expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); :}
+| expression:e1 LEFTBRACKET expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); :}
+| expression:e1 LEFTBRACKET COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); :}
+| expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); :}
+;
+
+term ::=
+factor:e					{: RESULT = e; :}
+| term:e1 MULTIPLY factor:e2 {: RESULT = new ExprOperationNode(QSym.MULTIPLY, e1, e2); :}
+| term:e1 DIVIDE factor:e2	{: RESULT = new ExprOperationNode(QSym.DIVIDE, e1, e2); :}
+| term:e1 POWER factor:e2	{: RESULT = new ExprOperationNode(QSym.POWER, e1, e2); :}
+| term:e1 AND factor:e2		{: RESULT = new ExprOperationNode(QSym.AND, e1, e2); :}
+;
+
+factor ::=
+exponent:e1 POWER factor:e2 {: RESULT = new ExprOperationNode(QSym.POWER, e1, e2); :}
+| exponent:e				{: RESULT = e; :}
+;
+
+exponent ::=
+MINUS exponent:e			{: RESULT = new ExprOperationNode(QSym.MINUS, e); :}
+| final:e					{: RESULT = e; :}
+;
+
+final ::=
+accessor:e							{: RESULT = e; :}
+| LEFTPAREN expression:e RIGHTPAREN	{: RESULT = e; :}
+| INTLITERAL:val					{: RESULT = new IntNode(val); :}												
+| FLOATLITERAL:val					{: RESULT = new FloatNode(val); :}
+| BOOLLITERAL:val					{: RESULT = new BoolNode(val); :}
+| CHARLITERAL:val					{: RESULT = new CharNode(val); :}
+| function_call:e					{: RESULT = e; :}
+| LENGTH LEFTPAREN expression:e RIGHTPAREN	{: RESULT = new LengthNode(e); :}
+| sequence:e // This includes STRINGLITERAL	{: RESULT = e; :} 
+;

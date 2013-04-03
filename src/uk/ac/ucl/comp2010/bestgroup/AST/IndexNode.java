@@ -1,10 +1,11 @@
 package uk.ac.ucl.comp2010.bestgroup.AST;
 
 public class IndexNode extends ExprNode{
-	public String variable;
+	public ExprNode var;
 	public ExprNode index;
-	public IndexNode(String variable, ExprNode index) {
-		this.variable = variable;
+		
+	public IndexNode(ExprNode var, ExprNode index) {
+		this.var = var;
 		this.index = index;
 	}
 }

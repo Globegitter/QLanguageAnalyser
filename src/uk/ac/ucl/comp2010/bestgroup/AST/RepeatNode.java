@@ -4,10 +4,10 @@ import java.util.LinkedList;
 
 public class RepeatNode extends StatementNode{
 	public ExprNode condition;
-	public LinkedList<StatementNode> statements;
-	
-	public RepeatNode(LinkedList<StatementNode> statements, ExprNode condition) {
-		this.statements = statements;
+	public BlockNode loop;
+		
+	public RepeatNode(BlockNode loop, ExprNode condition) {
 		this.condition = condition;
+		this.loop = loop;
 	}
 }

@@ -4,16 +4,16 @@ import java.util.LinkedList;
 
 public class IfNode extends StatementNode{
 	public ExprNode condition;
-	public LinkedList<StatementNode> sTrue;
-	public LinkedList<StatementNode> sFalse;
+	public BlockNode true_block;
+	public BlockNode false_block;
 	
-	public IfNode(ExprNode condition, LinkedList<StatementNode> sTrue) {
-		this(condition, sTrue, new LinkedList<StatementNode>());
+	public IfNode(ExprNode condition, BlockNode true_block) {
+		this(condition, true_block, null);
 	}
 	
-	public IfNode(ExprNode condition, LinkedList<StatementNode> sTrue, LinkedList<StatementNode> sFalse) {
+	public IfNode(ExprNode condition, BlockNode true_block, BlockNode false_block) {
 		this.condition = condition;
-		this.sTrue = sTrue;
-		this.sFalse = sFalse;
+		this.true_block = true_block;
+		this.false_block = false_block;
 	}
 }
