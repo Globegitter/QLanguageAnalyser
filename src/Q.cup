@@ -76,8 +76,8 @@ BOOL {: RESULT = "bool"; :}
 ;
 
 program ::= 
-global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); System.out.println("Parsing Complete"); :}
-| block:block 							{: RESULT = new ProgramNode(block); System.out.println("Parsing Complete"); :}
+global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); :}
+| block:block 							{: RESULT = new ProgramNode(block); :}
 ;
 
 global_decl_list ::= 
@@ -104,7 +104,7 @@ var_type:var_type var_init:var_init SEMICOLON {: RESULT = new VarDeclNode(var_ty
 
 var_init ::=
 ASSIGN expression_clist:expr_list {: RESULT = expr_list; :} 
-|
+|								  {: :}
 ;
 
 datatype_decl ::=
@@ -145,7 +145,7 @@ statement:statement statement_list:statement_list 	{: RESULT = statement_list; R
 
 statement ::= 
 assignment:stmt					{: RESULT = stmt; :}
-| function_call:call SEMICOLON	{: RESULT = new FuncCallStmtNode(call.id, call.args); :}
+| function_call:call SEMICOLON	{: RESULT = new FuncCallStmtNode(call); :}
 | ifelse:stmt					{: RESULT = stmt; :} 
 | if:stmt						{: RESULT = stmt; :}
 | while:stmt					{: RESULT = stmt; :}				
@@ -183,7 +183,7 @@ accessor:accessor ASSIGN expression:expr SEMICOLON	{: RESULT = new AssignmentNod
 ;
 
 sequence ::=
-STRINGLITERAL:str	{: RESULT = new SequenceNode(str);:}
+STRINGLITERAL:str	{: RESULT = new StringNode(str);  :}
 | tuple:seq			{: RESULT = new SequenceNode(seq); :}
 | list:seq			{: RESULT = new SequenceNode(seq); :}
 ;
@@ -213,18 +213,18 @@ COMMA expression:expr expression_clist2:expr_list 	{: RESULT = expr_list; RESULT
 
 expression ::=
 term:e							{: RESULT = e; :}
-| NOT expression:e				{: RESULT = new ExprOperationNode(QSym.NOT, e); :}
-| expression:e1 PLUS term:e2	{: RESULT = new ExprOperationNode(QSym.PLUS, e1, e2); :}
-| expression:e1 MINUS term:e2	{: RESULT = new ExprOperationNode(QSym.MINUS, e1, e2); :}
-| expression:e1 OR term:e2		{: RESULT = new ExprOperationNode(QSym.OR, e1, e2); :}
-| expression:e1 IN term:e2		{: RESULT = new ExprOperationNode(QSym.IN, e1, e2); :}
-| expression:e1 LESSTHAN term:e2{: RESULT = new ExprOperationNode(QSym.LESSTHAN, e1, e2); :}
-| expression:e1 LESSTHANEQUAL term:e2	{: RESULT = new ExprOperationNode(QSym.LESSTHANEQUAL, e1, e2); :}
-| expression:e1 GREATERTHAN term:e2		{: RESULT = new ExprOperationNode(QSym.GREATERTHAN, e1, e2); :}
-| expression:e1 GREATERTHANEQUAL term:e2{: RESULT = new ExprOperationNode(QSym.GREATERTHANEQUAL, e1, e2); :}
-| expression:e1 EQUAL term:e2			{: RESULT = new ExprOperationNode(QSym.EQUAL, e1, e2); :}
-| expression:e1 NOTEQUAL term:e2		{: RESULT = new ExprOperationNode(QSym.NOTEQUAL, e1, e2); :}
-| expression:e1 CONCAT term:e2			{: RESULT = new ExprOperationNode(QSym.CONCAT, e1, e2); :}
+| NOT expression:e				{: RESULT = new NotNode(e); :}
+| expression:e1 PLUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.PLUS, e1, e2); :}
+| expression:e1 MINUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.MINUS, e1, e2); :}
+| expression:e1 OR term:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.OR, e1, e2); :}
+| expression:e1 IN term:e2		{: RESULT = new InNode(e1, e2); :}
+| expression:e1 LESSTHAN term:e2{: RESULT = new ComparisonNode(ComparisonNode.LESSTHAN, e1, e2); :}
+| expression:e1 LESSTHANEQUAL term:e2	{: RESULT = new ComparisonNode(ComparisonNode.LESSTHANEQUAL, e1, e2); :}
+| expression:e1 GREATERTHAN term:e2		{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHAN, e1, e2); :}
+| expression:e1 GREATERTHANEQUAL term:e2{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHANEQUAL, e1, e2); :}
+| expression:e1 EQUAL term:e2			{: RESULT = new EqualsNode(EqualsNode.EQUAL, e1, e2); :}
+| expression:e1 NOTEQUAL term:e2		{: RESULT = new EqualsNode(EqualsNode.NOTEQUAL, e1, e2); :}
+| expression:e1 CONCAT term:e2			{: RESULT = new ConcatNode(e1, e2); :}
 | expression:e1 LEFTBRACKET expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); :}
 | expression:e1 LEFTBRACKET expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); :}
 | expression:e1 LEFTBRACKET COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); :}
@@ -233,19 +233,19 @@ term:e							{: RESULT = e; :}
 
 term ::=
 factor:e					{: RESULT = e; :}
-| term:e1 MULTIPLY factor:e2 {: RESULT = new ExprOperationNode(QSym.MULTIPLY, e1, e2); :}
-| term:e1 DIVIDE factor:e2	{: RESULT = new ExprOperationNode(QSym.DIVIDE, e1, e2); :}
-| term:e1 POWER factor:e2	{: RESULT = new ExprOperationNode(QSym.POWER, e1, e2); :}
-| term:e1 AND factor:e2		{: RESULT = new ExprOperationNode(QSym.AND, e1, e2); :}
+| term:e1 MULTIPLY factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.MULTIPLY, e1, e2); :}
+| term:e1 DIVIDE factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.DIVIDE, e1, e2); :}
+| term:e1 POWER factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); :}
+| term:e1 AND factor:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.AND, e1, e2); :}
 ;
 
 factor ::=
-exponent:e1 POWER factor:e2 {: RESULT = new ExprOperationNode(QSym.POWER, e1, e2); :}
+exponent:e1 POWER factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); :}
 | exponent:e				{: RESULT = e; :}
 ;
 
 exponent ::=
-MINUS exponent:e			{: RESULT = new ExprOperationNode(QSym.MINUS, e); :}
+MINUS exponent:e			{: RESULT = new NegativeNode(e); :}
 | final:e					{: RESULT = e; :}
 ;
 
@@ -258,5 +258,5 @@ accessor:e							{: RESULT = e; :}
 | CHARLITERAL:val					{: RESULT = new CharNode(val); :}
 | function_call:e					{: RESULT = e; :}
 | LENGTH LEFTPAREN expression:e RIGHTPAREN	{: RESULT = new LengthNode(e); :}
-| sequence:e // This includes STRINGLITERAL	{: RESULT = e; :} 
+| sequence:e 						{: RESULT = e; :} 
 ;

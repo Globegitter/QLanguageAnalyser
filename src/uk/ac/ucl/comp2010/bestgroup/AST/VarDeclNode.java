@@ -1,14 +1,12 @@
 package uk.ac.ucl.comp2010.bestgroup.AST;
 
+import java.util.LinkedList;
+
 public class VarDeclNode extends DeclNode {
 	public VarTypeNode var;
-	public Object value;
+	public LinkedList<ExprNode> value;
 	
-	public VarDeclNode(VarTypeNode var) {
-		this(var, null);
-	}
-	
-	public VarDeclNode(VarTypeNode var, Object value) {
+	public VarDeclNode(VarTypeNode var, LinkedList<ExprNode> value) {
 		this.var = var;
 		this.value = value;
 	}

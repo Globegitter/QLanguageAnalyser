@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import java_cup.runtime.Symbol;
-import uk.ac.ucl.comp2010.bestgroup.AST.ExprOperationNode;
-import uk.ac.ucl.comp2010.bestgroup.AST.Node;
+import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class ParserTest {
 
@@ -26,7 +25,8 @@ public class ParserTest {
 	
 	public static void testParser(QCup parser) throws Exception {
 		Symbol parse_tree = parser.parse();
-		displayTree(parse_tree.value, 0);
+		//displayTree((ProgramNode)parse_tree.value, 0);
+		CodeOutputVisitor.display((ProgramNode)parse_tree.value);
 	}
 	
 	public static void testFile(String fileName) throws Exception {
@@ -41,6 +41,7 @@ public class ParserTest {
 		testParser(parser);
 	}
 	
+	
 		
 	public static void displayTree(Object node, int i) {
 		if(node == null) {
@@ -48,20 +49,8 @@ public class ParserTest {
 			return;
 		}
 		
-		if(ExprOperationNode.class.isInstance(node)) {
-			Field[] tokenFields = QSym.class.getFields();
-			for(Field f: tokenFields) {
-				try {
-					if(((ExprOperationNode)node).op == (int) f.get(QSym.class)) {
-						System.out.println("ExprOperation: " + f.getName());
-					}
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
-			System.out.println(node.getClass().getSimpleName());
-		}
+		
+		System.out.println(node.getClass().getSimpleName());
 		
 		Field[] nodeFields = node.getClass().getFields();
 
@@ -89,7 +78,7 @@ public class ParserTest {
 							}
 						}
 					}
-				} else if(ExprOperationNode.class.isInstance(node) && field.getName() == "op") {
+				//} else if(ExprOperationNode.class.isInstance(node) && field.getName() == "op") {
 					
 					
 				} else {
