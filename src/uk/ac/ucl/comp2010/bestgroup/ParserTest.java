@@ -18,7 +18,7 @@ public class ParserTest {
 		
 		int nrTests = 5;
 		for (int i = 1; i <= nrTests; i++) {
-			System.out.println("\n\n\n--------Running now test 0" + i + "--------");
+			System.out.println("\n\n\n\n\n\n----------------Running now test 0" + i + "----------------");
 			testFile("./testfiles/test0" + i);
 		}
 	}
@@ -26,7 +26,10 @@ public class ParserTest {
 	public static void testParser(QCup parser) throws Exception {
 		Symbol parse_tree = parser.parse();
 		//displayTree((ProgramNode)parse_tree.value, 0);
-		CodeOutputVisitor.display((ProgramNode)parse_tree.value);
+		System.out.println("\nRepeating code\n--------------");
+		new CodeOutputVisitor().visit((ProgramNode)parse_tree.value);
+		System.out.println("\n\nScope + Type checking\n---------------------");
+		new SemanticsVisitor().visit((ProgramNode)parse_tree.value);
 	}
 	
 	public static void testFile(String fileName) throws Exception {
