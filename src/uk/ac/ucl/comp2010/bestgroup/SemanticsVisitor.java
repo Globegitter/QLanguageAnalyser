@@ -1,8 +1,6 @@
 package uk.ac.ucl.comp2010.bestgroup;
 import java.util.*;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class SemanticsVisitor extends Visitor{
@@ -11,7 +9,6 @@ public class SemanticsVisitor extends Visitor{
     
 	public SemanticsVisitor() {
 		symbolTables = new LinkedList<HashMap<String, DeclNode>>();
-		beginScope();
 	}
     
     private void insert(String id, DeclNode node){
@@ -29,8 +26,8 @@ public class SemanticsVisitor extends Visitor{
     //Possibly change to boolean return-type?
     private DeclNode lookup(String id){
 
-        for(ListIterator it = symbolTables.listIterator(symbolTables.size()); it.hasPrevious();){
-            DeclNode declaration = ((HashMap<String, DeclNode>) it.previous()).get(id);
+        for(ListIterator<HashMap<String, DeclNode>> it = symbolTables.listIterator(symbolTables.size()); it.hasPrevious();){
+            DeclNode declaration = it.previous().get(id);
             if(declaration != null){
                 return declaration;
             }
@@ -46,8 +43,10 @@ public class SemanticsVisitor extends Visitor{
         }
         return null;*/
     }
-    //endscope
-    //lookup(key) traverse linkedlist and look for key in hasmaps
+    
+    private DeclNode lookupFirst(String id){
+    	return symbolTables.getFirst().get(id);
+    }
 
     @Override
     public Object visit(IntNode node) {
@@ -68,6 +67,18 @@ public class SemanticsVisitor extends Visitor{
             System.out.println("Cannot understand: " + leftType + " " + node.op + " " + rightType);
             return null;
         }
+    }
+    
+    @Override
+    public Object visit(ProgramNode node){
+    	beginScope();
+    	visit(node.declarations);
+    	beginScope();
+    	visit(node.main);
+    	endScope();
+    	endScope();
+		return "programnode";
+    	
     }
 
     @Override
@@ -102,15 +113,33 @@ public class SemanticsVisitor extends Visitor{
     	if(symbolTables.size() == 1){
     		symbolTables.getFirst().put(node.id, node);
     	}else{
-    		System.out.println("Error! Can't declare Datatype here.");
+    		System.out.println("Error! Can't declare Datatype here. If you see this very message, some programmer has been lazy.");
     	}
         
         return "datatypedecl";
         // for declaring datatypes
     }
-
+    
+    //Question: An AccessorNode ever only has two elements in node.path, right?
+    //TO-DO: Check the second element. E.g. if it is a tdef, check that you are accessing an element that exists.
     @Override
     public Object visit(AccessorNode node){
+    	if(symbolTables.size() > 1){
+    		String firstEl = node.path.getFirst();
+    		System.out.println("---Start-----");
+    		for(String el: node.path){
+    			System.out.println(el);
+    		}
+    		System.out.println("----End-----");
+    		//System.out.println(node.path.getFirst());
+    		if(lookup(node.path.getFirst()) != null){
+    			return "First step successful";
+    		}else{
+    			System.out.println("Error! Data-type does not exist.");
+    		}
+    	}else{
+    		System.out.println("Error! Can't access data-type here. If you see this very message, some programmer has been lazy.");
+    	}
         System.out.println("AccessorNode");
         return "AccessorNode";
         // for accessing variables
