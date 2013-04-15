@@ -194,6 +194,7 @@ public abstract class Visitor {
 	
 
 	public Object visit(Object node) {
+		//System.out.println(node.toString());
 		if(node instanceof AccessorNode) {
 			return visit((AccessorNode)node);
 		} else if(node instanceof AssignmentNode) {
@@ -211,6 +212,7 @@ public abstract class Visitor {
 		} else if(node instanceof ConcatNode) {
 			return visit((ConcatNode)node);
 		} else if(node instanceof DatatypeDeclNode) {
+			//System.out.println("Yo, I am here" + node.toString());
 			return visit((DatatypeDeclNode)node);
 		} else if(node instanceof EqualsNode) {
 			return 	visit((EqualsNode)node);

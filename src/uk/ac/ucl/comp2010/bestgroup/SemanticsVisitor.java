@@ -10,6 +10,14 @@ public class SemanticsVisitor extends Visitor{
 	public SemanticsVisitor() {
 		symbolTables = new LinkedList<HashMap<String, DeclNode>>();
 	}
+	
+	/*public Object visitList(List<?> l) {
+		ListIterator li = l.listIterator();
+		while(li.hasNext()) {
+			visit(li.next());
+		}
+		return null;
+	}*/
     
     private void insert(String id, DeclNode node){
         symbolTables.getLast().put(id, node);
@@ -93,7 +101,8 @@ public class SemanticsVisitor extends Visitor{
     @Override
     public Object visit(ProgramNode node){
     	beginScope();
-    	visit(node.declarations);
+    	System.out.println("Beginning Scope, declaration size: " + node.declarations.size());
+    	super.visitList(node.declarations);
     	beginScope();
     	visit(node.main);
     	endScope();
