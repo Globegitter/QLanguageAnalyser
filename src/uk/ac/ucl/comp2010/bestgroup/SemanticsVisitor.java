@@ -47,6 +47,27 @@ public class SemanticsVisitor extends Visitor{
     private DeclNode lookupFirst(String id){
     	return symbolTables.getFirst().get(id);
     }
+    
+    //could possibly give more detailed error description if I change it from boolean to int or string and at least 3 returns.
+    //Note: What should happen if someone does e.g. f:person and a line later f:family and then accesses f.xx
+    private boolean lookupProperty(String id, String property){
+    	DeclNode customType = lookup(id);
+    	System.out.println("Entering");
+    	if(customType != null){
+    		System.out.println(customType.toString());
+    	}
+    	if(customType instanceof VarDeclNode){
+    		//((VarDeclNode) customType).var.type
+    		System.out.println("OK");
+    		/*LinkedList<VarTypeNode> customTypeFields = ((DatatypeDeclNode) customType).fields;
+    		for(ListIterator<VarTypeNode> it = customTypeFields.listIterator(); it.hasNext();){
+                if(it.next().id == property){
+                    return true;
+                }
+            }*/
+    	}
+    	return false;
+    }
 
     @Override
     public Object visit(IntNode node) {
@@ -109,7 +130,7 @@ public class SemanticsVisitor extends Visitor{
 
     @Override
     public Object visit(DatatypeDeclNode node){
-    	System.out.println(node.id);
+    	System.out.println("DatatypeDeclNode:" + node.id);
     	if(symbolTables.size() == 1){
     		symbolTables.getFirst().put(node.id, node);
     	}else{
@@ -125,6 +146,7 @@ public class SemanticsVisitor extends Visitor{
     @Override
     public Object visit(AccessorNode node){
     	if(symbolTables.size() > 1){
+    		/*if(node.path.size() <= 2){
     		String firstEl = node.path.getFirst();
     		System.out.println("---Start-----");
     		for(String el: node.path){
@@ -132,10 +154,36 @@ public class SemanticsVisitor extends Visitor{
     		}
     		System.out.println("----End-----");
     		//System.out.println(node.path.getFirst());
-    		if(lookup(node.path.getFirst()) != null){
+    		if(lookup(firstEl) != null){
+    			if(node.path.size() == 2){
+    				System.out.println(node.path.getFirst() + "---" + node.path.get(1));
+    				if(lookupProperty(node.path.getFirst(), node.path.get(1))){
+    					return "Success";
+    				}else{
+    					System.out.println("Error! Property you are trying to access does not exist");
+    				}
+    			}
     			return "First step successful";
     		}else{
     			System.out.println("Error! Data-type does not exist.");
+    		}*/
+    		if(node.path.size() == 1){
+    			DeclNode variable = lookup(node.path.getFirst());
+    			if(variable != null){
+    				System.out.println("Variabl usage;");
+    				//cast to VarDeclNode to get type and do stuff
+    				return "Working";
+    			}else{
+    				System.err.println("Error! Variable does not exist.");
+    			}
+    		}else if(node.path.size() == 2){
+    			if(lookupProperty(node.path.getFirst(), node.path.get(1))){
+    				System.out.println("Woohey");
+    			}else{
+    				System.err.println("In ya face!");
+    			}
+    		}else{
+    			System.out.println("Error. You can't chain multiple datatypes.");
     		}
     	}else{
     		System.out.println("Error! Can't access data-type here. If you see this very message, some programmer has been lazy.");
