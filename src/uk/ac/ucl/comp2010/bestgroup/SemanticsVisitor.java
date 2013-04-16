@@ -105,9 +105,11 @@ public class SemanticsVisitor extends Visitor{
     }
 
     @Override
+    //To-do: need to check if what the variable is actually declaring, e.g. if it is calling a function, etc. exists.
     public Object visit(VarDeclNode node){
     	HashMap<String, DeclNode> latestTable = symbolTables.getLast();
     	if(latestTable.get(node.var.id) == null){
+    		System.out.println("Vardecl Size:" + node.value.size());
     		latestTable.put(node.var.id, node);
     	}else{
     		System.out.println("Can't declare Variable with the same name twice.");
