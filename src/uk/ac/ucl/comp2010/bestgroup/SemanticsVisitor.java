@@ -133,7 +133,8 @@ public class SemanticsVisitor extends Visitor{
     @Override
     public Object visit(VarTypeNode node){
     	System.out.println(node.id);
-    	//insert(node.id, node);
+    	VarDeclNode paramDecl = new VarDeclNode(node, new LinkedList<ExprNode>());
+    	insert(node.id, paramDecl);
         // for declaring functions
 		return "Bla";
     }
