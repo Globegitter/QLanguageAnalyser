@@ -109,6 +109,7 @@ public class SemanticsVisitor extends Visitor{
     public Object visit(VarDeclNode node){
     	HashMap<String, DeclNode> latestTable = symbolTables.getLast();
     	if(latestTable.get(node.var.id) == null){
+    		System.out.println("Printing var decl:" + node.value.getFirst().toString());
     		System.out.println("Vardecl Size:" + node.value.size());
     		latestTable.put(node.var.id, node);
     	}else{
@@ -185,6 +186,8 @@ public class SemanticsVisitor extends Visitor{
     			DeclNode variable = lookup(variableId);
     			if(variable != null){
     				System.out.println("Variabl usage;");
+    				
+    				//((VarDeclNode) variable).value.getFirst()
     				//cast to VarDeclNode to get type and do stuff
     				return "Working";
     			}else{
