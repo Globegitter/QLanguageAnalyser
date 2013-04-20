@@ -1,4 +1,5 @@
 package uk.ac.ucl.comp2010.bestgroup;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -184,12 +185,13 @@ public abstract class Visitor {
 	
 	
 	public Object visitList(List l) {
+		LinkedList<Object> out = new LinkedList<Object>(); 
 		ListIterator li = l.listIterator();
 		while(li.hasNext()) {
 			Object n = li.next();
-			visit(n);
+			out.addLast(visit(n));
 		}
-		return null;
+		return out;
 	}
 	
 
