@@ -1,0 +1,21 @@
+
+// Testing: Calling an undeclared variable (booklist)
+
+b1:string = "1984";
+b2:string = "The Fountainhead";
+b3:string = "The Return of the King";
+
+{
+  key:string="ing";  
+  books:list=[b1,b2,b3];
+
+  found : bool = false;
+  i : int = 0;
+
+  while (i<len(books)) do {
+     tmp : string = booklist[i];
+     if (key in tmp) { found = true; }
+     else {}
+     i = i + 1;
+  }
+}

@@ -1,0 +1,23 @@
+
+// Testing: Calling an undefined property on a structure(team.otherplayers)
+
+tdef player : surname:string, number:int, position:string; // player definition
+
+tdef team : captain:player, goalkeeper:player, outfielders:list; // team definition
+
+displayTeam();
+
+{ 
+
+// here we generate
+/* a team */
+
+  cpt:player = "Vidic", 15, "CB";
+  gk:person = "De Gea", 1, "GK";
+  p1:person = "Giggs", 11, "LW";
+  p2:person = "Rooney", 10, "FW";
+  p3:person = "Cleverley", 23, "CM";
+
+  t: team = cpt,gk,[p1,p2,p3];
+  t.otherplayers = t.otherplayers :: [p3];
+}

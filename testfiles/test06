@@ -1,0 +1,21 @@
+
+// Testing: Multiline comments
+
+tdef rockstar : name:string, surnumber:string, instrument:string; // player definition
+
+tdef band : vocalist:rockstar, drummer:rockstar, guitarists:rockstar; // team definition
+
+{ 
+
+/* Here,
+We are generating a band
+Namely, Led Zeppelin */
+
+  v:rockstar = "Robert", "Plant", "voice";
+  d:rockstar = "John", "Bonham", "drums";
+  g1:rockstar = "Jimmy", "Page", "lead guitar";
+  g2:rockstar = "John Paul", "Jones", "bass";
+
+  b: band = v,d,[g1];
+  b.guitarists = b.guitarists :: [g2];
+}
