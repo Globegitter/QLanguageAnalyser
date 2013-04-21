@@ -7,17 +7,13 @@ public class SemanticsVisitor extends Visitor{
 	
     LinkedList<HashMap<String, DeclNode>> symbolTables;
     
+    public void error(String err, Node node) {
+    	System.out.println(err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
+    }
+    
 	public SemanticsVisitor() {
 		symbolTables = new LinkedList<HashMap<String, DeclNode>>();
 	}
-	
-	/*public Object visitList(List<?> l) {
-		ListIterator li = l.listIterator();
-		while(li.hasNext()) {
-			visit(li.next());
-		}
-		return null;
-	}*/
     
     private void insert(String id, DeclNode node){
         symbolTables.getLast().put(id, node);
@@ -33,7 +29,6 @@ public class SemanticsVisitor extends Visitor{
 
     //Possibly change to boolean return-type?
     private DeclNode lookup(String id){
-
         for(ListIterator<HashMap<String, DeclNode>> it = symbolTables.listIterator(symbolTables.size()); it.hasPrevious();){
             DeclNode declaration = it.previous().get(id);
             if(declaration != null){
@@ -48,18 +43,17 @@ public class SemanticsVisitor extends Visitor{
     }
     
     //could possibly give more detailed error description if I change it from boolean to int or string and at least 3 returns.
-    //Note: What should happen if someone does e.g. f:person and a line later f:family and then accesses f.xx Will that be caught earlier?
     private boolean lookupProperty(String id, String property){
     	//Looks if variable has been declared
     	DeclNode variableDecl = lookup(id);
-    	System.out.println("Entering, looking for: " + id);
+    	//System.out.println("Entering, looking for: " + id);
     	if(variableDecl != null){
-    		System.out.println(variableDecl.toString());
+    		//System.out.println(variableDecl.toString());
     	}
     	if(variableDecl instanceof VarDeclNode){
     		//Now need to check what type it is and if it has been declared at the top.
     		String variableType = ((VarDeclNode) variableDecl).var.type;
-    		System.out.println("Found: " + variableType);
+    		//System.out.println("Found: " + variableType);
     		DeclNode customType = symbolTables.getFirst().get(variableType);
     		if(customType != null){
     			if(customType instanceof DatatypeDeclNode){
@@ -80,13 +74,13 @@ public class SemanticsVisitor extends Visitor{
         String leftType = (String)visit(node.left);
         String rightType = (String)visit(node.right);
         if(leftType == "int" && rightType == "int") {
-            System.out.println("int");
+            //System.out.println("int");
             return "int";
         } else if(leftType == "int" && rightType == "float" || leftType == "float" && rightType == "int" || leftType == "float" && rightType == "float"){
-            System.out.println("float");
+            //System.out.println("float");
             return "float";
         } else {
-            System.out.println("Cannot understand: " + leftType + " " + node.op + " " + rightType);
+            //System.out.println("Cannot understand: " + leftType + " " + node.op + " " + rightType);
             return null;
         }
     }
@@ -94,7 +88,7 @@ public class SemanticsVisitor extends Visitor{
     @Override
     public Object visit(ProgramNode node){
     	beginScope();
-    	System.out.println("Beginning Scope, declaration size: " + node.declarations.size());
+    	//System.out.println("Beginning Scope, declaration size: " + node.declarations.size());
     	super.visitList(node.declarations);
     	beginScope();
     	visit(node.main);
@@ -108,15 +102,15 @@ public class SemanticsVisitor extends Visitor{
     //To-do: need to check if what the variable is actually declaring, e.g. if it is calling a function, etc. exists.
     public Object visit(VarDeclNode node){
     	HashMap<String, DeclNode> latestTable = symbolTables.getLast();
-    	if(latestTable.get(node.var.id) == null){
-    		System.out.println("Printing var decl:" + node.value.getFirst().toString());
-    		System.out.println("Vardecl Size:" + node.value.size());
+    	if(! latestTable.containsKey(node.var.id)){
+    		//System.out.println("Printing var decl:" + node.value.getFirst().toString());
+    		//System.out.println("Vardecl Size:" + node.value.size());
     		latestTable.put(node.var.id, node);
     	}else{
-    		System.out.println("Can't declare Variable with the same name twice.");
+    		error("Can't declare variable twice in same scope", node);
     	}
         
-        System.out.println("vardecl");
+        //System.out.println("vardecl");
         return "vardecl";
         //for declaring variables
     }
@@ -124,18 +118,18 @@ public class SemanticsVisitor extends Visitor{
     @Override
     public Object visit(FuncDeclNode node){
     	beginScope();
-    	System.out.println("FuncDeclNode: Begin Scope");
+    	//System.out.println("FuncDeclNode: Begin Scope");
         super.visitList(node.args);
         visit(node.body);
         endScope();
-        System.out.println("End Scope");
+        //System.out.println("End Scope");
         return "funcdecl";
         // for declaring functions
     }
     
     @Override
     public Object visit(VarTypeNode node){
-    	System.out.println(node.id);
+    	//System.out.println(node.id);
     	VarDeclNode paramDecl = new VarDeclNode(node, new LinkedList<ExprNode>());
     	insert(node.id, paramDecl);
         // for declaring functions
@@ -144,11 +138,11 @@ public class SemanticsVisitor extends Visitor{
 
     @Override
     public Object visit(DatatypeDeclNode node){
-    	System.out.println("DatatypeDeclNode:" + node.id);
+    	//System.out.println("DatatypeDeclNode:" + node.id);
     	if(symbolTables.size() == 1){
     		symbolTables.getFirst().put(node.id, node);
     	}else{
-    		System.out.println("Error! Can't declare Datatype here. If you see this very message, some programmer has been lazy.");
+    		error("Error! Can't declare Datatype here. If you see this very message, some programmer has been lazy.", node);
     	}
         
         return "datatypedecl";
@@ -159,60 +153,93 @@ public class SemanticsVisitor extends Visitor{
     //TO-DO: Check the second element. E.g. if it is a tdef, check that you are accessing an element that exists.
     @Override
     public Object visit(AccessorNode node){
+   		String variableId = node.path.getFirst();
+		DeclNode vardecl = lookup(variableId);
+		if(vardecl == null && !(vardecl instanceof VarDeclNode)){
+			error("Variable " + variableId + " does not exit", node);
+			return null;
+		} else {
+			if(node.path.size() == 1) {
+				return ((VarDeclNode)vardecl).var.type;
+			} else {
+				String t = ((VarDeclNode)vardecl).var.type;
+				DeclNode type;
+				pathloop: for(int p=0; p<node.path.size()-1; p++) {
+					type = lookupFirst(t);
+					for(ListIterator<VarTypeNode> ti = ((DatatypeDeclNode)type).fields.listIterator(); ti.hasNext();) {
+						VarTypeNode n = ti.next();
+						if(n.id.equals(node.path.get(p+1))) {
+							t = n.type;
+							continue pathloop;
+						}
+					}
+					String e = node.path.getFirst();
+					for(int i=1; i<=p; i++) {
+						if(i>0) {e+=".";}
+						e += node.path.get(p);					
+					}
+					e += " (type: " + t + ") does not have property " + node.path.get(p+1);
+					error(e,node);
+					return null;
+				}
+				return t;
+			}
+		}
+			/*
+			if(node.path.size() == 1) {
+				return ((DatatypeDeclNode)type).id; 
+			} else {
+				node.path.get(2);
+			}
+			if(type instanceof DatatypeDeclNode) {
+				((DatatypeDeclNode)type).
+			}
+			if(node.path.size() == 1) {
+				return type;
+			} else {
+				 
+			}
+		} else{
+			
+			return null;
+		}
+/**/
+    	
+    
+    
+    /*
     	if(symbolTables.size() > 1){
-    		/*if(node.path.size() <= 2){
-    		String firstEl = node.path.getFirst();
-    		System.out.println("---Start-----");
-    		for(String el: node.path){
-    			System.out.println(el);
-    		}
-    		System.out.println("----End-----");
-    		//System.out.println(node.path.getFirst());
-    		if(lookup(firstEl) != null){
-    			if(node.path.size() == 2){
-    				System.out.println(node.path.getFirst() + "---" + node.path.get(1));
-    				if(lookupProperty(node.path.getFirst(), node.path.get(1))){
-    					return "Success";
-    				}else{
-    					System.out.println("Error! Property you are trying to access does not exist");
-    				}
-    			}
-    			return "First step successful";
-    		}else{
-    			System.out.println("Error! Data-type does not exist.");
-    		}*/
+    		
     		if(node.path.size() == 1){
     			String variableId = node.path.getFirst();
     			DeclNode variable = lookup(variableId);
     			if(variable != null){
-    				System.out.println("Variabl usage;");
+    				//System.out.println("Variabl usage;");
     				
     				//((VarDeclNode) variable).value.getFirst()
     				//cast to VarDeclNode to get type and do stuff
     				return "Working";
     			}else{
-    				System.err.println("Error! Variable " + variableId + " does not exist.");
+    				error("Variable " + variableId + " does not exit", node);
     			}
     		}else if(node.path.size() == 2){
     			if(lookupProperty(node.path.getFirst(), node.path.get(1))){
-    				System.out.println("Woohey");
+    				//System.out.println("Woohey");
     			}else{
     				System.err.println("In ya face!");
     			}
-    		}else{
-    			System.out.println("Error. You can't chain multiple datatypes.");
     		}
-    	}else{
-    		System.out.println("Error! Can't access data-type here. If you see this very message, some programmer has been lazy.");
+    	} else{
+    		//System.out.println("Error! Can't access data-type here. If you see this very message, some programmer has been lazy.");
     	}
-        System.out.println("AccessorNode");
-        return "AccessorNode";
-        // for accessing variables
+        //System.out.println("AccessorNode");
+        return "AccessorNode";*/
+        // for accessing variables*/
     }
 
     @Override
     public Object visit(FuncCallExprNode node){
-        System.out.println("FuncCallExprNode");
+        //System.out.println("FuncCallExprNode");
         return "FuncCallExprNode";
         // for calling functions
     }

@@ -8,4 +8,5 @@ public abstract class Node {
 		lineNumber = l+1;
 		charNumber = c+1;
 	}
+
 }

@@ -19,8 +19,9 @@ public class ParserTest {
 		
 		int nrTests = 11;
 		for (int i = 1; i <= nrTests; i++) {
-			System.out.println("\n\n\n\n\n\n----------------Running now test " + i + "----------------");
+			System.out.println("----------------Running now test " + i + "----------------");
 			testFile("./testfiles/test" + i);
+			System.out.println("\n\n\n\n\n");
 		}
 		//testFile("./testfiles/test10");
 	}
@@ -31,7 +32,7 @@ public class ParserTest {
 		//displayTree((ProgramNode)parse_tree.value, 0);
 		System.out.println("\nRepeating code\n--------------");
 		new CodeOutputVisitor().visit((ProgramNode)parse_tree.value);
-		System.out.println("\n\nScope + Type checking\n---------------------");
+		System.out.println("\n\nRunning Semantics Visitor\n---------------------");
 		new SemanticsVisitor().visit((ProgramNode)parse_tree.value);
 	}
 	
