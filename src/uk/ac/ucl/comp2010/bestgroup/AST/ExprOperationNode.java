@@ -4,7 +4,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class ExprOperationNode extends ExprNode{
+	/**
+	 * @uml.property  name="op"
+	 */
 	public int op;
+	/**
+	 * @uml.property  name="args"
+	 */
 	public LinkedList<ExprNode> args;
 	
 	public ExprOperationNode(int op, ExprNode... args) {

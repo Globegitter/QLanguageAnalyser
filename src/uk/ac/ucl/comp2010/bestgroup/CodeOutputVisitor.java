@@ -7,6 +7,9 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class CodeOutputVisitor extends Visitor{
+	/**
+	 * @uml.property  name="indent"
+	 */
 	int indent = 0;
 
 	public String getIndent(int d) {

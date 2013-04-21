@@ -4,6 +4,9 @@ import java.util.LinkedList;
 
 
 public class StringNode extends SequenceNode{
+	/**
+	 * @uml.property  name="str"
+	 */
 	public String str;
 	
 	public StringNode(String str) {

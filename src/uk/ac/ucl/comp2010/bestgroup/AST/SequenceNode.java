@@ -4,6 +4,9 @@ import java.util.LinkedList;
 
 
 public class SequenceNode extends ExprNode{
+	/**
+	 * @uml.property  name="elements"
+	 */
 	public LinkedList<ExprNode> elements;
 	
 	public SequenceNode(LinkedList<ExprNode> elements) {

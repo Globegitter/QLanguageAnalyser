@@ -7,6 +7,10 @@ package uk.ac.ucl.comp2010.bestgroup;
 import java_cup.runtime.*;
 
 class QHelper {
+	/**
+	 * @uml.property  name="lex"
+	 * @uml.associationEnd  multiplicity="(1 1)" inverse="h:uk.ac.ucl.comp2010.bestgroup.QLex"
+	 */
 	QLex lex;
 
 	public QHelper(QLex lex) {

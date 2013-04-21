@@ -5,6 +5,10 @@ import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class SemanticsVisitor extends Visitor{
 	
+    /**
+	 * @uml.property  name="symbolTables"
+	 * @uml.associationEnd  multiplicity="(0 -1)" elementType="java.util.HashMap"
+	 */
     LinkedList<HashMap<String, DeclNode>> symbolTables;
     
 	public SemanticsVisitor() {
