@@ -16,10 +16,12 @@ public class ParserTest {
 		testString(str);*/
 		//testFile("./testfiles/test");
 		
-		int nrTests = 5;
+		int nrTests = 12;
 		for (int i = 1; i <= nrTests; i++) {
-			System.out.println("\n\n\n\n\n\n----------------Running now test 0" + i + "----------------");
-			testFile("./testfiles/test0" + i);
+			if(i != 7) {
+				System.out.println("\n\n\n\n\n\n----------------Running now test " + i + "----------------");
+				testFile("./testfiles/test" + i);
+			}
 		}
 	}
 	

@@ -1,23 +1,21 @@
 
-// Testing: Calling an undefined property on a structure(team.otherplayers)
+// Testing: Calling an undeclared variable (booklist)
 
-tdef player : surname:string, number:int, position:string; // player definition
+b1:string = "1984";
+b2:string = "The Fountainhead";
+b3:string = "The Return of the King";
 
-tdef team : captain:player, goalkeeper:player, outfielders:list; // team definition
+{
+  key:string="ing";  
+  books:list=[b1,b2,b3];
 
-displayTeam();
+  found : bool = false;
+  i : int = 0;
 
-{ 
-
-// here we generate
-/* a team */
-
-  cpt:player = "Vidic", 15, "CB";
-  gk:person = "De Gea", 1, "GK";
-  p1:person = "Giggs", 11, "LW";
-  p2:person = "Rooney", 10, "FW";
-  p3:person = "Cleverley", 23, "CM";
-
-  t: team = cpt,gk,[p1,p2,p3];
-  t.otherplayers = t.otherplayers :: [p3];
+  while (i<len(books)) do {
+     tmp : string = booklist[i];
+     if (key in tmp) { found = true; }
+     else {}
+     i = i + 1;
+  }
 }

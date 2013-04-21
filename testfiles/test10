@@ -1,16 +1,23 @@
 
-// Testing: Creating two structures with the same name (v)
+// Testing: Calling an undefined property on a structure(team.otherplayers)
 
-tdef rockstar : name:string, surnumber:string, instrument:string; // player definition
+tdef player : surname:string, number:int, position:string; // player definition
 
-tdef band : vocalist:rockstar, drummer:rockstar, guitarists:rockstar; // team definition
+tdef team : captain:player, goalkeeper:player, outfielders:list; // team definition
+
+displayTeam();
 
 { 
-  v:rockstar = "Robert", "Plant", "voice";
-  d:rockstar = "John", "Bonham", "drums";
-  g1:rockstar = "Jimmy", "Page", "lead guitar";
-  g2:rockstar = "John Paul", "Jones", "bass";
 
-  v: band = v,d,[g1];
-  v.children = v.guitarists :: [g2];
+// here we generate
+/* a team */
+
+  cpt:player = "Vidic", 15, "CB";
+  gk:person = "De Gea", 1, "GK";
+  p1:person = "Giggs", 11, "LW";
+  p2:person = "Rooney", 10, "FW";
+  p3:person = "Cleverley", 23, "CM";
+
+  t: team = cpt,gk,[p1,p2,p3];
+  t.otherplayers = t.otherplayers :: [p3];
 }
