@@ -16,16 +16,17 @@ public class ParserTest {
 		testString(str);*/
 		//testFile("./testfiles/test");
 		
-		int nrTests = 12;
+		
+		int nrTests = 11;
 		for (int i = 1; i <= nrTests; i++) {
-			if(i != 7) {
-				System.out.println("\n\n\n\n\n\n----------------Running now test " + i + "----------------");
-				testFile("./testfiles/test" + i);
-			}
+			System.out.println("\n\n\n\n\n\n----------------Running now test " + i + "----------------");
+			testFile("./testfiles/test" + i);
 		}
+		//testFile("./testfiles/test10");
 	}
 	
 	public static void testParser(QCup parser) throws Exception {
+		System.out.println("Parsing\n-------");
 		Symbol parse_tree = parser.parse();
 		//displayTree((ProgramNode)parse_tree.value, 0);
 		System.out.println("\nRepeating code\n--------------");
