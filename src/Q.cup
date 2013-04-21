@@ -1,5 +1,6 @@
 package uk.ac.ucl.comp2010.bestgroup;
 
+
 import java_cup.runtime.*;
 import uk.ac.ucl.comp2010.bestgroup.AST.*;
 import java.util.LinkedList;
@@ -76,8 +77,8 @@ BOOL {: RESULT = "bool"; :}
 ;
 
 program ::= 
-global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); :}
-| block:block 							{: RESULT = new ProgramNode(block); :}
+global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); RESULT.setPosition(decl_listleft, decl_listright); :}
+| block:block 							{: RESULT = new ProgramNode(block); RESULT.setPosition(blockleft, blockright); :}
 ;
 
 global_decl_list ::= 
@@ -92,15 +93,15 @@ datatype_decl:decl	 {: RESULT = decl; :}
 ;
 
 function_decl ::= 
-FDEF ID:id LEFTPAREN parameter_clist:param_list RIGHTPAREN COLON function_type:type block:body {:RESULT = new FuncDeclNode(id, param_list, type, body); :}
+FDEF:fdef ID:id LEFTPAREN parameter_clist:param_list RIGHTPAREN COLON function_type:type block:body {:RESULT = new FuncDeclNode(id, param_list, type, body); RESULT.setPosition(fdefleft, fdefright);  :}
 ;
 
 var_type ::= 
-ID:id COLON type:type {: RESULT = new VarTypeNode(id, type); :}
+ID:id COLON type:type {: RESULT = new VarTypeNode(id, type); RESULT.setPosition(idleft, idright); :}
 ; 
 
 var_decl ::= 
-var_type:var_type var_init:var_init SEMICOLON {: RESULT = new VarDeclNode(var_type, var_init); :};
+var_type:var_type var_init:var_init SEMICOLON {: RESULT = new VarDeclNode(var_type, var_init); RESULT.setPosition(var_typeleft, var_typeright); :};
 
 var_init ::=
 ASSIGN expression_clist:expr_list {: RESULT = expr_list; :} 
@@ -108,7 +109,7 @@ ASSIGN expression_clist:expr_list {: RESULT = expr_list; :}
 ;
 
 datatype_decl ::=
-TDEF ID:id COLON parameter_clist:param_list SEMICOLON {: RESULT = new DatatypeDeclNode(id, param_list); :}
+TDEF:tdef ID:id COLON parameter_clist:param_list SEMICOLON {: RESULT = new DatatypeDeclNode(id, param_list); RESULT.setPosition(tdefleft, tdefright); :}
 ;
 
 function_type ::= 
@@ -128,8 +129,8 @@ COMMA var_type:param parameter_clist2:param_list 	{: RESULT = param_list; RESULT
 ;
 
 block ::= 
-LEFTBRACE local_decl_list:decl_list statement_list:statement_list RIGHTBRACE 	{: RESULT = new BlockNode(decl_list, statement_list); :}
-| LEFTBRACE statement_list:statement_list RIGHTBRACE							{: RESULT = new BlockNode(statement_list); :}
+LEFTBRACE:lb local_decl_list:decl_list statement_list:statement_list RIGHTBRACE 	{: RESULT = new BlockNode(decl_list, statement_list); RESULT.setPosition(lbleft, lbright); :}
+| LEFTBRACE:lb statement_list:statement_list RIGHTBRACE							{: RESULT = new BlockNode(statement_list); RESULT.setPosition(lbleft, lbright); :}
 ;
 
 // Local declaration only allows variable declarations
@@ -145,7 +146,7 @@ statement:statement statement_list:statement_list 	{: RESULT = statement_list; R
 
 statement ::= 
 assignment:stmt					{: RESULT = stmt; :}
-| function_call:call SEMICOLON	{: RESULT = new FuncCallStmtNode(call); :}
+| function_call:call SEMICOLON	{: RESULT = new FuncCallStmtNode(call); RESULT.setPosition(callleft, callright); :}
 | ifelse:stmt					{: RESULT = stmt; :} 
 | if:stmt						{: RESULT = stmt; :}
 | while:stmt					{: RESULT = stmt; :}				
@@ -154,43 +155,43 @@ assignment:stmt					{: RESULT = stmt; :}
 ;
 
 ifelse ::= 
-IF LEFTPAREN expression:condition RIGHTPAREN block:true_block ELSE block:false_block {: RESULT = new IfNode(condition, true_block, false_block); :}
+IF:i LEFTPAREN expression:condition RIGHTPAREN block:true_block ELSE block:false_block {: RESULT = new IfNode(condition, true_block, false_block); RESULT.setPosition(ileft, iright); :}
 ;
 
 if ::= 
-IF LEFTPAREN expression:condition RIGHTPAREN block:true_block {: RESULT = new IfNode(condition, true_block); :}
+IF:i LEFTPAREN expression:condition RIGHTPAREN block:true_block {: RESULT = new IfNode(condition, true_block); RESULT.setPosition(ileft, iright); :}
 ;
 
 while ::=
-WHILE LEFTPAREN expression:condition RIGHTPAREN DO block:loop {: RESULT = new WhileNode(condition, loop); :}
+WHILE:w LEFTPAREN expression:condition RIGHTPAREN DO block:loop {: RESULT = new WhileNode(condition, loop); RESULT.setPosition(wleft, wright); :}
 ;
 
 repeatuntil ::= 
-REPEAT block:loop UNTIL LEFTPAREN expression:condition RIGHTPAREN SEMICOLON {: RESULT = new RepeatNode(loop, condition); :} 
+REPEAT:r block:loop UNTIL LEFTPAREN expression:condition RIGHTPAREN SEMICOLON {: RESULT = new RepeatNode(loop, condition); RESULT.setPosition(rleft, rright); :} 
 ;
 
 function_call ::=
-ID:id LEFTPAREN expression_clist:expr_list RIGHTPAREN {: RESULT = new FuncCallExprNode(id, expr_list); :} 
+ID:id LEFTPAREN expression_clist:expr_list RIGHTPAREN {: RESULT = new FuncCallExprNode(id, expr_list); RESULT.setPosition(idleft, idright); :} 
 ;
 
 return ::= 
-RETURN expression:expr SEMICOLON	{: RESULT = new ReturnNode(expr); :}
-| RETURN SEMICOLON					{: RESULT = new ReturnNode(); :}
+RETURN:r expression:expr SEMICOLON	{: RESULT = new ReturnNode(expr); RESULT.setPosition(rleft, rright); :}
+| RETURN:r SEMICOLON					{: RESULT = new ReturnNode(); RESULT.setPosition(rleft, rright); :}
 ;
 
 assignment ::= 
-accessor:accessor ASSIGN expression:expr SEMICOLON	{: RESULT = new AssignmentNode(accessor, expr); :}
+accessor:accessor ASSIGN expression:expr SEMICOLON	{: RESULT = new AssignmentNode(accessor, expr); RESULT.setPosition(accessorleft, accessorright); :}
 ;
 
 sequence ::=
-STRINGLITERAL:str	{: RESULT = new StringNode(str);  :}
-| tuple:seq			{: RESULT = new SequenceNode(seq); :}
-| list:seq			{: RESULT = new SequenceNode(seq); :}
+STRINGLITERAL:str	{: RESULT = new StringNode(str); RESULT.setPosition(strleft, strright);  :}
+| tuple:seq			{: RESULT = new SequenceNode(seq); RESULT.setPosition(seqleft, seqright); :}
+| list:seq			{: RESULT = new SequenceNode(seq); RESULT.setPosition(seqleft, seqright); :}
 ;
 
 accessor ::= 
-ID:id						{: RESULT = new AccessorNode(id); :}
-| accessor:parent DOT ID:id	{: RESULT = new AccessorNode(parent, id); :} 
+ID:id						{: RESULT = new AccessorNode(id); RESULT.setPosition(idleft, idright); :}
+| accessor:parent DOT ID:id	{: RESULT = new AccessorNode(parent, id); RESULT.setPosition(parentleft, parentright); :} 
 ;
 
 tuple ::=
@@ -213,50 +214,50 @@ COMMA expression:expr expression_clist2:expr_list 	{: RESULT = expr_list; RESULT
 
 expression ::=
 term:e							{: RESULT = e; :}
-| NOT expression:e				{: RESULT = new NotNode(e); :}
-| expression:e1 PLUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.PLUS, e1, e2); :}
-| expression:e1 MINUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.MINUS, e1, e2); :}
-| expression:e1 OR term:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.OR, e1, e2); :}
-| expression:e1 IN term:e2		{: RESULT = new InNode(e1, e2); :}
-| expression:e1 LESSTHAN term:e2{: RESULT = new ComparisonNode(ComparisonNode.LESSTHAN, e1, e2); :}
-| expression:e1 LESSTHANEQUAL term:e2	{: RESULT = new ComparisonNode(ComparisonNode.LESSTHANEQUAL, e1, e2); :}
-| expression:e1 GREATERTHAN term:e2		{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHAN, e1, e2); :}
-| expression:e1 GREATERTHANEQUAL term:e2{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHANEQUAL, e1, e2); :}
-| expression:e1 EQUAL term:e2			{: RESULT = new EqualsNode(EqualsNode.EQUAL, e1, e2); :}
-| expression:e1 NOTEQUAL term:e2		{: RESULT = new EqualsNode(EqualsNode.NOTEQUAL, e1, e2); :}
-| expression:e1 CONCAT term:e2			{: RESULT = new ConcatNode(e1, e2); :}
-| expression:e1 LEFTBRACKET expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); :}
-| expression:e1 LEFTBRACKET expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); :}
-| expression:e1 LEFTBRACKET COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); :}
-| expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); :}
+| NOT expression:e				{: RESULT = new NotNode(e); RESULT.setPosition(eleft, eright); :}
+| expression:e1 PLUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.PLUS, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 MINUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.MINUS, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 OR term:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.OR, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 IN term:e2		{: RESULT = new InNode(e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 LESSTHAN term:e2{: RESULT = new ComparisonNode(ComparisonNode.LESSTHAN, e1, e2); RESULT.setPosition(e1left, e1right);:}
+| expression:e1 LESSTHANEQUAL term:e2	{: RESULT = new ComparisonNode(ComparisonNode.LESSTHANEQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 GREATERTHAN term:e2		{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHAN, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 GREATERTHANEQUAL term:e2{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHANEQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 EQUAL term:e2			{: RESULT = new EqualsNode(EqualsNode.EQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 NOTEQUAL term:e2		{: RESULT = new EqualsNode(EqualsNode.NOTEQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 CONCAT term:e2			{: RESULT = new ConcatNode(e1, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 LEFTBRACKET expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 LEFTBRACKET expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 LEFTBRACKET COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); RESULT.setPosition(e1left, e1right); :}
+| expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); RESULT.setPosition(e1left, e1right); :}
 ;
 
 term ::=
 factor:e					{: RESULT = e; :}
-| term:e1 MULTIPLY factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.MULTIPLY, e1, e2); :}
-| term:e1 DIVIDE factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.DIVIDE, e1, e2); :}
-| term:e1 POWER factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); :}
-| term:e1 AND factor:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.AND, e1, e2); :}
+| term:e1 MULTIPLY factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.MULTIPLY, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| term:e1 DIVIDE factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.DIVIDE, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| term:e1 POWER factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| term:e1 AND factor:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.AND, e1, e2); RESULT.setPosition(e1left, e1right); :}
 ;
 
 factor ::=
-exponent:e1 POWER factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); :}
+exponent:e1 POWER factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); RESULT.setPosition(e1left, e1right);:}
 | exponent:e				{: RESULT = e; :}
 ;
 
 exponent ::=
-MINUS exponent:e			{: RESULT = new NegativeNode(e); :}
+MINUS exponent:e			{: RESULT = new NegativeNode(e); RESULT.setPosition(eleft, eright);:}
 | final:e					{: RESULT = e; :}
 ;
 
 final ::=
 accessor:e							{: RESULT = e; :}
 | LEFTPAREN expression:e RIGHTPAREN	{: RESULT = e; :}
-| INTLITERAL:val					{: RESULT = new IntNode(val); :}												
-| FLOATLITERAL:val					{: RESULT = new FloatNode(val); :}
-| BOOLLITERAL:val					{: RESULT = new BoolNode(val); :}
-| CHARLITERAL:val					{: RESULT = new CharNode(val); :}
+| INTLITERAL:val					{: RESULT = new IntNode(val); RESULT.setPosition(valleft, valright); :}												
+| FLOATLITERAL:val					{: RESULT = new FloatNode(val); RESULT.setPosition(valleft, valright);:}
+| BOOLLITERAL:val					{: RESULT = new BoolNode(val);  RESULT.setPosition(valleft, valright); :}
+| CHARLITERAL:val					{: RESULT = new CharNode(val); RESULT.setPosition(valleft, valright); :}
 | function_call:e					{: RESULT = e; :}
-| LENGTH LEFTPAREN expression:e RIGHTPAREN	{: RESULT = new LengthNode(e); :}
+| LENGTH:length LEFTPAREN expression:e RIGHTPAREN	{: RESULT = new LengthNode(e);  RESULT.setPosition(lengthleft, lengthright); :}
 | sequence:e 						{: RESULT = e; :} 
 ;
