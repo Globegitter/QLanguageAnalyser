@@ -77,19 +77,20 @@ BOOL {: RESULT = "bool"; :}
 ;
 
 program ::= 
-global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); RESULT.setPosition(decl_listleft, decl_listright); :}
-| block:block 							{: RESULT = new ProgramNode(block); RESULT.setPosition(blockleft, blockright); :}
+global_decl_list:decl_list block:block	{: RESULT = new ProgramNode(decl_list, block); System.out.println("Parsing complete"); :}
+| block:block 							{: RESULT = new ProgramNode(block);  System.out.println("Parsing complete"); :}
 ;
 
 global_decl_list ::= 
-global_decl_list:decl_list global_decl:decl {: RESULT = decl_list; RESULT.addLast(decl); :} 
-| global_decl:decl 							{: RESULT = new LinkedList<DeclNode>(); RESULT.addFirst(decl); :}
+global_decl_list:decl_list global_decl:decl {: RESULT = decl_list; if(decl != null) {RESULT.addLast(decl);} :} 
+| global_decl:decl 							{: RESULT = new LinkedList<DeclNode>(); if(decl != null) {RESULT.addFirst(decl);} :}
 ;
 
 global_decl ::= 
 datatype_decl:decl	 {: RESULT = decl; :}
 | var_decl:decl		 {: RESULT = decl; :}
 | function_decl:decl {: RESULT = decl; :}
+| error:e SEMICOLON  {: RESULT = null; System.out.println("Could not understand global declaration at line " + (eleft+1) + ", column " + (eright+1) + ". Ignoring."); :}
 ;
 
 function_decl ::= 
@@ -119,28 +120,28 @@ VOID 		{: RESULT = "void"; :}
 
 //two-productions are needed to avoid ambiguity
 parameter_clist ::= 
-var_type:param parameter_clist2:param_list	{: RESULT = param_list; RESULT.addFirst(param); :} 
+var_type:param parameter_clist2:param_list	{: RESULT = param_list; if(param != null) {RESULT.addFirst(param);} :} 
 |											{: RESULT = new LinkedList<VarTypeNode>(); :}
 ;
 
 parameter_clist2 ::= 
-COMMA var_type:param parameter_clist2:param_list 	{: RESULT = param_list; RESULT.addFirst(param); :}
+COMMA var_type:param parameter_clist2:param_list 	{: RESULT = param_list; if(param != null) {RESULT.addFirst(param);} :}
 |													{: RESULT = new LinkedList<VarTypeNode>(); :}
 ;
 
 block ::= 
 LEFTBRACE:lb local_decl_list:decl_list statement_list:statement_list RIGHTBRACE 	{: RESULT = new BlockNode(decl_list, statement_list); RESULT.setPosition(lbleft, lbright); :}
-| LEFTBRACE:lb statement_list:statement_list RIGHTBRACE							{: RESULT = new BlockNode(statement_list); RESULT.setPosition(lbleft, lbright); :}
+| LEFTBRACE:lb statement_list:statement_list RIGHTBRACE								{: RESULT = new BlockNode(statement_list); RESULT.setPosition(lbleft, lbright); :}
 ;
 
 // Local declaration only allows variable declarations
 local_decl_list ::= 
-local_decl_list:decl_list var_decl:decl		{: RESULT = decl_list; RESULT.addLast(decl); :}
-| var_decl:decl								{: RESULT = new LinkedList<DeclNode>(); RESULT.addFirst(decl); :}
+local_decl_list:decl_list var_decl:decl		{: RESULT = decl_list; if(decl != null) {RESULT.addLast(decl);} :}
+| var_decl:decl								{: RESULT = new LinkedList<DeclNode>(); if(decl != null) {RESULT.addFirst(decl);} :}
 ;
 
 statement_list ::= 
-statement:statement statement_list:statement_list 	{: RESULT = statement_list; RESULT.addFirst(statement); :}
+statement:statement statement_list:statement_list 	{: RESULT = statement_list; if(statement != null) {RESULT.addFirst(statement);} :}
 |													{: RESULT = new LinkedList<StatementNode>(); :}
 ;
 
@@ -152,6 +153,7 @@ assignment:stmt					{: RESULT = stmt; :}
 | while:stmt					{: RESULT = stmt; :}				
 | repeatuntil:stmt				{: RESULT = stmt; :}
 | return:stmt					{: RESULT = stmt; :}
+| error:e SEMICOLON				{: RESULT = null;  System.out.println("Could not understand statement at line " + (eleft+1) + ", column " + (eright+1) + ". Ignoring."); :}
 ;
 
 ifelse ::= 
@@ -176,7 +178,7 @@ ID:id LEFTPAREN expression_clist:expr_list RIGHTPAREN {: RESULT = new FuncCallEx
 
 return ::= 
 RETURN:r expression:expr SEMICOLON	{: RESULT = new ReturnNode(expr); RESULT.setPosition(rleft, rright); :}
-| RETURN:r SEMICOLON					{: RESULT = new ReturnNode(); RESULT.setPosition(rleft, rright); :}
+| RETURN:r SEMICOLON				{: RESULT = new ReturnNode(); RESULT.setPosition(rleft, rright); :}
 ;
 
 assignment ::= 
@@ -203,12 +205,12 @@ LEFTBRACKET expression_clist:expr_list RIGHTBRACKET {: RESULT = expr_list; :}
 ;
 
 expression_clist ::= 
-expression:expr expression_clist2:expr_list {: RESULT = expr_list; RESULT.addFirst(expr); :}
+expression:expr expression_clist2:expr_list {: RESULT = expr_list; if(expr != null) {RESULT.addFirst(expr);} :}
 |											{: RESULT = new LinkedList<ExprNode>(); :}
 ;
 
 expression_clist2 ::= 
-COMMA expression:expr expression_clist2:expr_list 	{: RESULT = expr_list; RESULT.addFirst(expr); :}
+COMMA expression:expr expression_clist2:expr_list 	{: RESULT = expr_list; if(expr != null) {RESULT.addFirst(expr);} :}
 |													{: RESULT = new LinkedList<ExprNode>(); :}
 ;
 
