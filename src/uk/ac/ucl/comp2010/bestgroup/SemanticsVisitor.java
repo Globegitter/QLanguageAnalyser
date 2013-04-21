@@ -5,10 +5,6 @@ import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class SemanticsVisitor extends Visitor{
 	
-    /**
-	 * @uml.property  name="symbolTables"
-	 * @uml.associationEnd  multiplicity="(0 -1)" elementType="java.util.HashMap"
-	 */
     LinkedList<HashMap<String, DeclNode>> symbolTables;
     
 	public SemanticsVisitor() {
@@ -113,6 +109,7 @@ public class SemanticsVisitor extends Visitor{
     public Object visit(VarDeclNode node){
     	HashMap<String, DeclNode> latestTable = symbolTables.getLast();
     	if(latestTable.get(node.var.id) == null){
+    		System.out.println("Printing var decl:" + node.value.getFirst().toString());
     		System.out.println("Vardecl Size:" + node.value.size());
     		latestTable.put(node.var.id, node);
     	}else{
@@ -189,6 +186,8 @@ public class SemanticsVisitor extends Visitor{
     			DeclNode variable = lookup(variableId);
     			if(variable != null){
     				System.out.println("Variabl usage;");
+    				
+    				//((VarDeclNode) variable).value.getFirst()
     				//cast to VarDeclNode to get type and do stuff
     				return "Working";
     			}else{
