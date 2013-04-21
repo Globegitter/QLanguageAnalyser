@@ -1,5 +1,4 @@
-
-// Testing: Creating two structures with the same name (v)
+// Error-Testing: Creating two custom data-types with the same name (v)
 
 tdef rockstar : name:string, surnumber:string, instrument:string; // player definition
 

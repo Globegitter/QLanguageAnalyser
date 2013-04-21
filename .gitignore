@@ -5,3 +5,6 @@ bin/
 QLex.java
 QSym.java
 QCup.java
+src/uk/ac/ucl/comp2010/bestgroup/QLex.java
+src/uk/ac/ucl/comp2010/bestgroup/QSym.java
+src/uk/ac/ucl/comp2010/bestgroup/QCup.java

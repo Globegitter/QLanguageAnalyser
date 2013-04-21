@@ -1,5 +1,4 @@
-
-// Testing: Calling a function out of scope
+// Error-Testing: Making a statement in the declaration 'area' of the program
 
 fdef product(i: int, j:int) : int {
      return i * j;

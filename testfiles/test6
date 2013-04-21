@@ -1,5 +1,4 @@
-
-// Testing: Multiline comments
+// Testing: Multiline comments, no errors
 
 tdef rockstar : name:string, surnumber:string, instrument:string; // player definition
 

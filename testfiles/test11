@@ -1,5 +1,4 @@
-
-// Testing: Calling an undeclared variable (booklist)
+// Error-Testing: Calling an undeclared variable (booklist)
 
 b1:string = "1984";
 b2:string = "The Fountainhead";

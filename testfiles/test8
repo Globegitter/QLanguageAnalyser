@@ -1,5 +1,4 @@
-
-// Testing: Calling an undefined function (displayTeam)
+// Error-Testing: Calling an undefined function (displayTeam)
 
 tdef player : surname:string, number:int, position:string; // player definition
 

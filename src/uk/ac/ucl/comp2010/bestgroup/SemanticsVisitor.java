@@ -1,14 +1,25 @@
 package uk.ac.ucl.comp2010.bestgroup;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class SemanticsVisitor extends Visitor{
 	
+	final static Logger LOGGER = Logger.getLogger(SemanticsVisitor.class .getName());
     LinkedList<HashMap<String, DeclNode>> symbolTables;
     
     public void error(String err, Node node) {
     	System.out.println(err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
+    }
+    
+    public void errorlog(String err, Node node){
+    	LOGGER.log(Level.SEVERE, err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
+    }
+    
+    public void errorlog(String err, Node node, Level logLevel){
+    	LOGGER.log(logLevel, err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
     }
     
 	public SemanticsVisitor() {
@@ -90,7 +101,7 @@ public class SemanticsVisitor extends Visitor{
     	if(! latestTable.containsKey(node.var.id)){
     		latestTable.put(node.var.id, node);
     	}else{
-    		error("Can't declare variable twice in same scope", node);
+    		errorlog("Can't declare variable twice in same scope", node);
     	}
         
         return "vardecl";
@@ -125,7 +136,7 @@ public class SemanticsVisitor extends Visitor{
     	if(symbolTables.size() == 1){
     		symbolTables.getFirst().put(node.id, node);
     	}else{
-    		error("Error! Can't declare Datatype here. If you see this very message, some programmer has been lazy.", node);
+    		errorlog("Error! Can't declare Datatype here. If you see this very message, some programmer has been lazy.", node);
     	}
         
         return "datatypedecl";
@@ -139,7 +150,7 @@ public class SemanticsVisitor extends Visitor{
    		String variableId = node.path.getFirst();
 		DeclNode vardecl = lookup(variableId);
 		if(vardecl == null && !(vardecl instanceof VarDeclNode)){
-			error("Variable " + variableId + " does not exit", node);
+			errorlog("Variable " + variableId + " does not exit", node);
 			return null;
 		} else {
 			if(node.path.size() == 1) {
@@ -162,7 +173,7 @@ public class SemanticsVisitor extends Visitor{
 						e += node.path.get(p);					
 					}
 					e += " (type: " + t + ") does not have property " + node.path.get(p+1);
-					error(e,node);
+					errorlog(e,node);
 					return null;
 				}
 				return t;
@@ -174,16 +185,16 @@ public class SemanticsVisitor extends Visitor{
     public Object visit(FuncCallExprNode node){
     	DeclNode fdef = lookupFirst(node.id);
     	if(fdef == null || !(fdef instanceof FuncDeclNode)) {
-    		error("Function " + node.id + " does not exit", node);
+    		errorlog("Function " + node.id + " does not exit", node);
     		return null;
     	} else if(node.args.size() != ((FuncDeclNode)fdef).args.size()){
-    		error("Function " + node.id + " should take " + ((FuncDeclNode)fdef).args.size() + " argument(s) (" + node.args.size() + " given)", node);
+    		errorlog("Function " + node.id + " should take " + ((FuncDeclNode)fdef).args.size() + " argument(s) (" + node.args.size() + " given)", node);
     	} else {
     		for(int i=0; i<node.args.size(); i++) {
     			String refType = (String) visit(node.args.get(i));
     			String declType = (String)(((FuncDeclNode)fdef).args.get(i).type);
     			if(! isSupertype(refType, declType)) {
-    				error("Argument " + (i+1) + " of function " + node.id + " should be of type " + declType + " (" + refType + " given)", node.args.get(i));
+    				errorlog("Argument " + (i+1) + " of function " + node.id + " should be of type " + declType + " (" + refType + " given)", node.args.get(i));
     			}
     		}
     	}

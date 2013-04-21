@@ -17,13 +17,13 @@ public class ParserTest {
 		//testFile("./testfiles/test");
 		
 		
-		/*int nrTests = 11;
+		int nrTests = 11;
 		for (int i = 1; i <= nrTests; i++) {
 			System.out.println("----------------Running now test " + i + "----------------");
 			testFile("./testfiles/test" + i);
 			System.out.println("\n\n\n\n\n");
-		}*/
-		testFile("./testfiles/test8");
+		}
+		//testFile("./testfiles/test8");
 	}
 	
 	public static void testParser(QCup parser) throws Exception {
