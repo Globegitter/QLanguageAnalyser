@@ -33,8 +33,8 @@ public class ParserTest {
 		System.out.println("\nRepeating code\n--------------");
 		new CodeOutputVisitor().visit((ProgramNode)parse_tree.value);
 		
-		System.out.println("\nAST\n---");
-		displayTree(parse_tree, 0);
+		//System.out.println("\nAST\n---");
+		//displayTree(parse_tree, 0);
 		
 		System.out.println("\n\nRunning Semantics Visitor\n---------------------");
 		new SemanticsVisitor().visit((ProgramNode)parse_tree.value);
