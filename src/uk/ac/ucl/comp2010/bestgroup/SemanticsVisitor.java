@@ -136,7 +136,7 @@ public class SemanticsVisitor extends Visitor{
     	if(symbolTables.size() == 1){
     		symbolTables.getFirst().put(node.id, node);
     	}else{
-    		errorlog("Error! Can't declare Datatype here. If you see this very message, some programmer has been lazy.", node);
+    		errorlog("Error! Custom Datatype can only be declared before the main block.", node);
     	}
         
         return "datatypedecl";
@@ -150,7 +150,7 @@ public class SemanticsVisitor extends Visitor{
    		String variableId = node.path.getFirst();
 		DeclNode vardecl = lookup(variableId);
 		if(vardecl == null && !(vardecl instanceof VarDeclNode)){
-			errorlog("Variable " + variableId + " does not exit", node);
+			errorlog("Variable " + variableId + " does not exist.", node);
 			return null;
 		} else {
 			if(node.path.size() == 1) {
@@ -185,10 +185,10 @@ public class SemanticsVisitor extends Visitor{
     public Object visit(FuncCallExprNode node){
     	DeclNode fdef = lookupFirst(node.id);
     	if(fdef == null || !(fdef instanceof FuncDeclNode)) {
-    		errorlog("Function " + node.id + " does not exit", node);
+    		errorlog("Function " + node.id + " does not exist.", node);
     		return null;
     	} else if(node.args.size() != ((FuncDeclNode)fdef).args.size()){
-    		errorlog("Function " + node.id + " should take " + ((FuncDeclNode)fdef).args.size() + " argument(s) (" + node.args.size() + " given)", node);
+    		errorlog("Function " + node.id + " should take " + ((FuncDeclNode)fdef).args.size() + " argument(s) (" + node.args.size() + " given).", node);
     	} else {
     		for(int i=0; i<node.args.size(); i++) {
     			String refType = (String) visit(node.args.get(i));
