@@ -261,7 +261,20 @@ public class SemanticsVisitor extends Visitor{
     
     @Override
     public Object visit(FloatNode node){
-    	return (String)"float";
+    	return (String)"float";  	
+    }
+    
+    /*@Override
+    public Object visit(IfNode node){
+    	//beginScope();
+    	if ((node.true_block.toString() != null) || (node.false_block.toString() != null)){
+    		for
+    	}
+    }*/
+    
+    
+    public Object visit(String node){
+    	return (String)"string";
     }
 
 }
