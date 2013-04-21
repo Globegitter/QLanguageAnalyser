@@ -68,22 +68,6 @@ public class SemanticsVisitor extends Visitor{
     public Object visit(IntNode node) {
         return "int";
     }
-
-    @Override
-    public Object visit(NumericOperationNode node) {
-        String leftType = (String)visit(node.left);
-        String rightType = (String)visit(node.right);
-        if(leftType == "int" && rightType == "int") {
-            //System.out.println("int");
-            return "int";
-        } else if(leftType == "int" && rightType == "float" || leftType == "float" && rightType == "int" || leftType == "float" && rightType == "float"){
-            //System.out.println("float");
-            return "float";
-        } else {
-            //System.out.println("Cannot understand: " + leftType + " " + node.op + " " + rightType);
-            return null;
-        }
-    }
     
     @Override
     public Object visit(ProgramNode node){
@@ -213,6 +197,71 @@ public class SemanticsVisitor extends Visitor{
     	if(sub == "int" || sup == "float")
     		return true;
     	return false;
+    }
+    
+    //compares concatNodes.
+    @Override
+    public Object visit(ConcatNode node){
+    	String left = (String)node.left.toString();
+    	String right = (String)node.right.toString();
+    	if(left.equals("tuple") && right.equals("tuple")){
+    		return (String)"tuple";
+    	}
+    	else if (left.equals("list") && right.equals("list")){
+    		return (String)"list";
+    	}
+    	return (String)"ConcatNode error";
+    }
+    
+    @Override
+    public Object visit(NumericOperationNode node) {
+        String leftType = (String)visit(node.left);
+        String rightType = (String)visit(node.right);
+        if(leftType == "int" && rightType == "int") {
+            //System.out.println("int");
+            return "int";
+        } else if(leftType == "int" && rightType == "float" || leftType == "float" && rightType == "int" || leftType == "float" && rightType == "float"){
+            //System.out.println("float");
+            return "float";
+        } else {
+            //System.out.println("Cannot understand: " + leftType + " " + node.op + " " + rightType);
+            return null;
+        }
+    }
+    
+    @Override
+    public Object visit(BoolNode node){
+    	return (String)"bool";
+    }
+    
+    @Override
+    public Object visit(CharNode node){
+    	return (String)"char";
+    }
+    
+    @Override
+    public Object visit(ComparisonNode node){
+    	String left = (String)node.left.toString();
+    	String right = (String)node.right.toString();
+    	if((left.equals("int") && right.equals("int")) || (left.equals("float") && right.equals("float")) || (left.equals("bool") && right.equals("bool")) || (left.equals("int") && right.equals("float")) || (left.equals("int") && right.equals("bool"))){
+    		return (String) "bool";
+    	}
+    	return (String) "ComparisonNode error";
+    }
+    
+    @Override
+    public Object visit(EqualsNode node){
+    	String left = (String)node.left.toString();
+    	String right = (String)node.right.toString();
+    	if (left == (String)"bool" && right == (String)"bool"){
+    		return (String)"bool";
+    	}
+    	return (String)"EqualsNode error";
+    }
+    
+    @Override
+    public Object visit(FloatNode node){
+    	return (String)"float";
     }
 
 }
