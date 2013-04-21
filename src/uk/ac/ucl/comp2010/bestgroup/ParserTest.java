@@ -17,21 +17,26 @@ public class ParserTest {
 		//testFile("./testfiles/test");
 		
 		
-		int nrTests = 11;
+		/*int nrTests = 11;
 		for (int i = 1; i <= nrTests; i++) {
-			System.out.println("\n\n\n\n\n\n----------------Running now test " + i + "----------------");
+			System.out.println("----------------Running now test " + i + "----------------");
 			testFile("./testfiles/test" + i);
-		}
-		//testFile("./testfiles/test10");
+			System.out.println("\n\n\n\n\n");
+		}*/
+		testFile("./testfiles/test8");
 	}
 	
 	public static void testParser(QCup parser) throws Exception {
 		System.out.println("Parsing\n-------");
 		Symbol parse_tree = parser.parse();
-		//displayTree((ProgramNode)parse_tree.value, 0);
+
 		System.out.println("\nRepeating code\n--------------");
 		new CodeOutputVisitor().visit((ProgramNode)parse_tree.value);
-		System.out.println("\n\nScope + Type checking\n---------------------");
+		
+		System.out.println("\nAST\n---");
+		displayTree(parse_tree, 0);
+		
+		System.out.println("\n\nRunning Semantics Visitor\n---------------------");
 		new SemanticsVisitor().visit((ProgramNode)parse_tree.value);
 	}
 	
@@ -61,6 +66,9 @@ public class ParserTest {
 		Field[] nodeFields = node.getClass().getFields();
 
 		for(Field field: nodeFields) {
+			if(field.getName() == "lineNumber" || field.getName() == "charNumber") {
+				continue;
+			}
 			try {
 				if(Node.class.isInstance(field.get(node))) {
 					System.out.print(indent(i+2) + field.getName() + " = ");
