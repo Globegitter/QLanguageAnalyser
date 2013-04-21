@@ -101,25 +101,24 @@ public class SemanticsVisitor extends Visitor{
     @Override
     //To-do: need to check if what the variable is actually declaring, e.g. if it is calling a function, etc. exists.
     public Object visit(VarDeclNode node){
+    	visitList(node.value);
     	HashMap<String, DeclNode> latestTable = symbolTables.getLast();
     	if(! latestTable.containsKey(node.var.id)){
-    		//System.out.println("Printing var decl:" + node.value.getFirst().toString());
-    		//System.out.println("Vardecl Size:" + node.value.size());
     		latestTable.put(node.var.id, node);
     	}else{
     		error("Can't declare variable twice in same scope", node);
     	}
         
-        //System.out.println("vardecl");
         return "vardecl";
         //for declaring variables
     }
 
     @Override
     public Object visit(FuncDeclNode node){
+    	insert(node.id, node);
     	beginScope();
     	//System.out.println("FuncDeclNode: Begin Scope");
-        super.visitList(node.args);
+        visitList(node.args);
         visit(node.body);
         endScope();
         //System.out.println("End Scope");
@@ -185,63 +184,35 @@ public class SemanticsVisitor extends Visitor{
 				return t;
 			}
 		}
-			/*
-			if(node.path.size() == 1) {
-				return ((DatatypeDeclNode)type).id; 
-			} else {
-				node.path.get(2);
-			}
-			if(type instanceof DatatypeDeclNode) {
-				((DatatypeDeclNode)type).
-			}
-			if(node.path.size() == 1) {
-				return type;
-			} else {
-				 
-			}
-		} else{
-			
-			return null;
-		}
-/**/
-    	
-    
-    
-    /*
-    	if(symbolTables.size() > 1){
-    		
-    		if(node.path.size() == 1){
-    			String variableId = node.path.getFirst();
-    			DeclNode variable = lookup(variableId);
-    			if(variable != null){
-    				//System.out.println("Variabl usage;");
-    				
-    				//((VarDeclNode) variable).value.getFirst()
-    				//cast to VarDeclNode to get type and do stuff
-    				return "Working";
-    			}else{
-    				error("Variable " + variableId + " does not exit", node);
-    			}
-    		}else if(node.path.size() == 2){
-    			if(lookupProperty(node.path.getFirst(), node.path.get(1))){
-    				//System.out.println("Woohey");
-    			}else{
-    				System.err.println("In ya face!");
-    			}
-    		}
-    	} else{
-    		//System.out.println("Error! Can't access data-type here. If you see this very message, some programmer has been lazy.");
-    	}
-        //System.out.println("AccessorNode");
-        return "AccessorNode";*/
-        // for accessing variables*/
     }
 
     @Override
     public Object visit(FuncCallExprNode node){
-        //System.out.println("FuncCallExprNode");
-        return "FuncCallExprNode";
+    	DeclNode fdef = lookupFirst(node.id);
+    	if(fdef == null || !(fdef instanceof FuncDeclNode)) {
+    		error("Function " + node.id + " does not exit", node);
+    		return null;
+    	} else if(node.args.size() != ((FuncDeclNode)fdef).args.size()){
+    		error("Function " + node.id + " should take " + ((FuncDeclNode)fdef).args.size() + " argument(s) (" + node.args.size() + " given)", node);
+    	} else {
+    		for(int i=0; i<node.args.size(); i++) {
+    			String refType = (String) visit(node.args.get(i));
+    			String declType = (String)(((FuncDeclNode)fdef).args.get(i).type);
+    			if(! isSupertype(refType, declType)) {
+    				error("Argument " + (i+1) + " of function " + node.id + " should be of type " + declType + " (" + refType + " given)", node.args.get(i));
+    			}
+    		}
+    	}
+    	return ((FuncDeclNode)fdef).type;
         // for calling functions
+    }
+    
+    public boolean isSupertype(String sub, String sup) {
+    	if(sub == sup)
+    		return true;
+    	if(sub == "int" || sup == "float")
+    		return true;
+    	return false;
     }
 
 }
