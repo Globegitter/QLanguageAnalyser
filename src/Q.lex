@@ -2,6 +2,7 @@ package uk.ac.ucl.comp2010.bestgroup;
 
 %%
 
+%public
 %class QLex
 %cupsym uk.ac.ucl.comp2010.bestgroup.QSym
 
