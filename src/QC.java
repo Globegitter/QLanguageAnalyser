@@ -2,6 +2,7 @@
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -16,7 +17,7 @@ import uk.ac.ucl.comp2010.bestgroup.*;
 public class QC {
 	private static QLex lex;
 	private static QCup pccParser;
-    private static InputStream input = System.in;
+    private static String input;
 
 	/**
 	 * Prints the int value of tokens created by the lexer object and values
@@ -51,11 +52,11 @@ public class QC {
 	            }else if (arg.equalsIgnoreCase("--ast")) {
 	                ast = true;
 	            } else {
-	                input = new FileInputStream(arg);
+	                input = arg;
 	            }
 	        }
 	        
-            lex = new QLex(input);
+            lex = new QLex(new FileReader(input));
             pccParser = new QCup(lex);
             if (lexOnly) {
                 lexicalAnalysisOnly();

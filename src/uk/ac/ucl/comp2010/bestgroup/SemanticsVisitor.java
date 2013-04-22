@@ -7,12 +7,17 @@ import uk.ac.ucl.comp2010.bestgroup.AST.*;
 
 public class SemanticsVisitor extends Visitor{
 	
+	int errors = 0;
 	final static Logger LOGGER = Logger.getLogger(SemanticsVisitor.class .getName()); 
 	LinkedList<HashMap<String, DeclNode>> symbolTables;
 	String returnType;
 
 	public void error(String err, Node node) {
 		System.out.println(err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
+		if(++errors >= 10) {
+			System.out.println("Maximum error count (10) reached. Aborting.");
+			System.exit(0);
+		}
 	}
 	
 	public void errorlog(String err, Node node){
@@ -93,6 +98,10 @@ public class SemanticsVisitor extends Visitor{
 		visit(node.main);
 		endScope();
 		endScope();
+		
+		if(errors == 0) {
+			System.out.println("No semantic errors found.");
+		}
 		return null;
 
 	}
