@@ -90,7 +90,7 @@ public class SemanticsVisitor extends Visitor{
 		String variableId = node.path.getFirst();
 		DeclNode vardecl = lookup(variableId);
 		if (vardecl == null && !(vardecl instanceof VarDeclNode)) {
-			error("Variable " + variableId + " does not exit", node);
+			error("Variable " + variableId + " does not exist", node);
 			return null;
 		} else {
 			if (node.path.size() == 1) {
@@ -115,7 +115,7 @@ public class SemanticsVisitor extends Visitor{
 						}
 						e += node.path.get(p);
 					}
-					e += " (type: " + t + ") does not have property "
+					e += " (type: " + t + ") does not have field "
 							+ node.path.get(p + 1);
 					error(e, node);
 					return null;
@@ -214,22 +214,35 @@ public class SemanticsVisitor extends Visitor{
 
 
 	@Override
-	//To-do: need to check if what the variable is actually declaring, e.g. if it is calling a function, etc. exists.
+	
 	public Object visit(VarDeclNode node) {
+		if (symbolTables.getLast().containsKey(node.var.id)) {
+			error("Can't declare " + node.var.id + " twice in same scope", node);
+			return null;
+		}
+		
 		if (!isType(node.var.type)) {
 			error("Type " + node.var.type + " does not exist", node);
 			return null;
 		}
-
-
-		visitList(node.value);
-		HashMap<String, DeclNode> latestTable = symbolTables.getLast();
-		if (!latestTable.containsKey(node.var.id)) {
-			latestTable.put(node.var.id, node);
-		} else {
-			error("Can't declare " + node.var.id + " twice in same scope", node);
+		
+		if(node.value != null) { //variable is initialised
+			if(node.var.type.equals("int") || node.var.type.equals("bool") || node.var.type.equals("float") || node.var.type.equals("char") || node.var.type.equals("tuple") || node.var.type.equals("list") || node.var.type.equals("string")) {
+				if(node.value.size() != 1) {
+					error("Invalid variable initialisation", node);
+				} else {
+					String v = (String) visit(node.value.getFirst());
+					if(v != null && ! isSupertype(v, node.var.type)) {
+						error("Can't convert from " + v + " to " + node.var.type, node);	
+					}
+				}
+			} else {
+				visitList(node.value);
+			}
 		}
-
+		
+		insert(node.var.id, node);
+		
 		return null;
 		// for declaring variables
 	}
@@ -241,8 +254,8 @@ public class SemanticsVisitor extends Visitor{
 
 
 	public boolean isType(String type) {
-		if (type == "string" || type == "int" || type == "float"
-				|| type == "bool" || type == "list" || type == "tuple") {
+		if (type.equals("string") || type.equals("int") || type.equals("float")
+				|| type.equals("bool") || type.equals("list") || type.equals("tuple")) {
 			return true;
 		}
 
@@ -256,12 +269,22 @@ public class SemanticsVisitor extends Visitor{
 	}
 
 	public boolean isSupertype(String sub, String sup) {
-		if(sub == sup)
+		if(sub.equals(sup))
 			return true;
-		if(sub == "int" && sup == "float")
+		
+		if(sub.equals("int") && sup.equals("float"))
 			return true;
-		//if(sub == "string" && sup == "list")
-			//return true;
+		
+		if((sub.equals("list") || (sub.length()>=5 && sub.substring(0, 5).equals("list.")) || sub.equals("char")) && (sup.equals("tuple") || sup.equals("list")))
+			return true;
+		
+		
+		if(sub.equals("string") && sup.equals("list.char") || sub.equals("list.char") && sup.equals("string"))
+			return true;
+		
+		if(sub.length()>=5 && sub.substring(0, 5).equals("list.") && sup.length()>=5 && sup.substring(0, 5).equals("list."))
+			return isSupertype(sub.substring(5), sup.substring(5));
+
 		return false;
 	}
 
@@ -286,12 +309,91 @@ public class SemanticsVisitor extends Visitor{
 	public Object visit(IntNode node) {
 		return "int";
 	}
-
 	
-	public Object visit(String node){
+	public Object visit(StringNode node){
 		return "string";
 	}
 	
+	public Object visit(SequenceNode node){
+		if(node.isTuple) {
+			visitList(node.elements);
+			return "tuple";
+		}
+		
+		if(node.elements.size() == 0) {
+			return "list";
+		}
+			
+		String type = (String) visit(node.elements.getFirst());
+		for(ListIterator<ExprNode>li = node.elements.listIterator(1); li.hasNext();) {
+			ExprNode n = li.next();
+			String v = (String) visit(n);
+			if(type != null) {
+				if(isSupertype(type, v)) {
+					type = v;
+				} else if(! isSupertype(v, type)) {
+					type = null;
+				}
+			}
+		}
+		if(type == null) {
+			return "list";
+		} else {
+			return "list." + type;
+		}
+	}
+	
+	public Object visit(AssignmentNode node) {
+		String t = (String) visit(node.var);
+		if(t == null)
+			return null;
+		if(t.equals("int") || t.equals("bool") || t.equals("float") || t.equals("char") || t.equals("tuple") || t.equals("list") || t.equals("string")) {
+			String v = (String) visit(node.value);
+			if(v != null && ! isSupertype(v, t)) {
+				error("Can't convert from " + v + " to " + t, node);	
+			}
+		} else {
+			visit(node.value);
+		}
+		return null;
+	}
+	
+	
+	public Object visit(IndexNode node) {
+		String i = (String) visit(node.index);
+		if(i != null && i != "int") {
+			error("int expected for indexing, " + i + "given", node);
+		}
+		
+		String v = (String) visit(node.var);
+		if(v == null) {
+			return null;
+		} else if(! isSupertype(v, "tuple")){
+			error("Indexing requires a sequence. " + v + " given", node);
+			return null;
+		} else if(v.equals("string")) {
+			return "char";
+		} else if(v.length()>=5 && v.substring(0, 5).equals("list.")){
+			return v.substring(5);
+		} else {			
+			return null;
+		}		
+	}
+	
+	public Object visit(IndexRangeNode node) {
+		String f = (String) visit(node.from);
+		if(f != null && f != "int") {
+			error("int expected for indexing, " + f + "given", node);
+		}
+		
+		String t = (String) visit(node.to);
+		if(t != null && t != "int") {
+			error("int expected for indexing, " + t + "given", node);
+		}
+		
+		String v = (String) visit(node.var);
+		return v;
+	}
 	
 	@Override
 	public Object visit(ComparisonNode node){
@@ -306,6 +408,44 @@ public class SemanticsVisitor extends Visitor{
 			return "bool";
 		}
 	}
+	
+	@Override
+	public Object visit(NegativeNode node) {
+		String e = (String) visit(node.expr);
+		if(e == null) {
+			return null;
+		} else if(e.equals("int")){
+			return "int";
+		} else if(e.equals("float")) {
+			return "float";
+		} else {
+			error("Can't interpret -<" + e + ">. Expecting numeric value", node);
+			return null;
+		}
+	}
+	
+	@Override
+	public Object visit(NotNode node) {
+		String e = (String) visit(node.expr);
+		if(e != null && !e.equals("bool")) {
+			error("Can't interpret !<" + e + ">. Expecting bool", node);
+		}
+		return "bool";
+	}
+	
+	@Override
+	public Object visit(BooleanOperationNode node){
+		String left = (String) visit(node.left);
+		String right = (String) visit(node.right);
+		if(left == null || right == null) {
+			return "bool";
+		} else if(left.equals("bool") && right.equals("bool")){
+			return "bool";
+		} else {
+			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
+			return "bool";
+		}
+	}
 
 	@Override
 	public Object visit(ConcatNode node){
@@ -313,10 +453,14 @@ public class SemanticsVisitor extends Visitor{
 		String right = (String) visit(node.right);
 		if(left == null || right == null) {
 			return null;
-		} else if(left.equals("tuple") && right.equals("tuple")){
+		} else if(isSupertype(left, "list") && isSupertype(right, "list")){
+			if(left.equals(right)) {
+				return left;
+			} else {
+				return "list";
+			}
+		} else if(isSupertype(left, "tuple") && isSupertype(right, "tuple")){
 			return "tuple";
-		} else if (left.equals("list") && right.equals("list")){
-			return "list";
 		} else {
 			error("Can't concatenate types " + node.left + " and " + node.right, node);
 			return null;
@@ -337,7 +481,7 @@ public class SemanticsVisitor extends Visitor{
 			return "bool";
 		} else {
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
-			return null;
+			return "bool";
 		}
 	}
 
@@ -351,6 +495,44 @@ public class SemanticsVisitor extends Visitor{
 			visit(node.false_block);		
 		return null;
 	}
+	
+	@Override
+	public Object visit(WhileNode node) {
+		if(visit(node.condition) != "bool") {
+			error("While condition must be a boolean", node.condition);
+		}
+		visit(node.loop);		
+		return null;
+	}
+	
+	
+	@Override
+	public Object visit(RepeatNode node) {
+		if(visit(node.condition) != "bool") {
+			error("Repeat condition must be a boolean", node.condition);
+		}
+		visit(node.loop);		
+		return null;
+	}
+
+	@Override
+	public Object visit(InNode node) {
+		visit(node.left);
+		String r = (String) visit(node.right);
+		if(r != null && ! isSupertype((String) r, "tuple")) {
+			error("'in' can only refer to a sequence. " + r + " given", node);
+		}
+		return "bool";
+	}
+	
+	@Override
+	public Object visit(LengthNode node) {
+		String s = (String) visit(node.sequence);
+		if(s != null && ! isSupertype((String) s, "tuple")) {
+			error("'len' can only refer to a sequence. " + s + " given", node);
+		}
+		return "int";
+	}
 
 
 	@Override
@@ -359,9 +541,9 @@ public class SemanticsVisitor extends Visitor{
 		String right = (String) visit(node.right);
 		if(left == null || right == null) {
 			return null;
-		} else if(left == "int" && right == "int") {
+		} else if(left.equals("int") && right.equals("int")) {
 			return "int";
-		} else if(left == "int" && right == "float" || left == "float" && right == "int" || left == "float" && right == "float"){
+		} else if(left.equals("int") && right.equals("float") || left.equals("float") && right.equals("int") || left.equals("float") && right.equals("float")){
 			return "float";
 		} else {
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);

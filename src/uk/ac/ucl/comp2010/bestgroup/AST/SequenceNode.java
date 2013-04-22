@@ -8,9 +8,11 @@ public class SequenceNode extends ExprNode{
 	 * @uml.property  name="elements"
 	 */
 	public LinkedList<ExprNode> elements;
-	
-	public SequenceNode(LinkedList<ExprNode> elements) {
+	public boolean isTuple = false;
+		
+	public SequenceNode(LinkedList<ExprNode> elements, boolean isTuple) {
 		this.elements = elements;
+		this.isTuple = isTuple;
 	}
 	
 	public SequenceNode(String str) {

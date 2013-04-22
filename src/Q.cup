@@ -187,8 +187,8 @@ accessor:accessor ASSIGN expression:expr SEMICOLON	{: RESULT = new AssignmentNod
 
 sequence ::=
 STRINGLITERAL:str	{: RESULT = new StringNode(str); RESULT.setPosition(strleft, strright);  :}
-| tuple:seq			{: RESULT = new SequenceNode(seq); RESULT.setPosition(seqleft, seqright); :}
-| list:seq			{: RESULT = new SequenceNode(seq); RESULT.setPosition(seqleft, seqright); :}
+| tuple:seq			{: RESULT = new SequenceNode(seq,true); RESULT.setPosition(seqleft, seqright); :}
+| list:seq			{: RESULT = new SequenceNode(seq,false); RESULT.setPosition(seqleft, seqright); :}
 ;
 
 accessor ::= 
@@ -216,39 +216,38 @@ COMMA expression:expr expression_clist2:expr_list 	{: RESULT = expr_list; if(exp
 
 expression ::=
 term:e							{: RESULT = e; :}
-| NOT expression:e				{: RESULT = new NotNode(e); RESULT.setPosition(eleft, eright); :}
-| expression:e1 PLUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.PLUS, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 MINUS term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.MINUS, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 OR term:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.OR, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 IN term:e2		{: RESULT = new InNode(e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 LESSTHAN term:e2{: RESULT = new ComparisonNode(ComparisonNode.LESSTHAN, e1, e2); RESULT.setPosition(e1left, e1right);:}
-| expression:e1 LESSTHANEQUAL term:e2	{: RESULT = new ComparisonNode(ComparisonNode.LESSTHANEQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 GREATERTHAN term:e2		{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHAN, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 GREATERTHANEQUAL term:e2{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHANEQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 EQUAL term:e2			{: RESULT = new EqualsNode(EqualsNode.EQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 NOTEQUAL term:e2		{: RESULT = new EqualsNode(EqualsNode.NOTEQUAL, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 CONCAT term:e2			{: RESULT = new ConcatNode(e1, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 LEFTBRACKET expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 LEFTBRACKET expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 LEFTBRACKET COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); RESULT.setPosition(e1left, e1right); :}
-| expression:e1 LEFTBRACKET expression:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); RESULT.setPosition(e1left, e1right); :}
+| NOT:n expression:e			{: RESULT = new NotNode(e); RESULT.setPosition(nleft, nright); :}
+| expression:e1 PLUS:o term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.PLUS, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 MINUS:o term:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.MINUS, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 OR:o term:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.OR, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 IN:o term:e2		{: RESULT = new InNode(e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 LESSTHAN:o term:e2{: RESULT = new ComparisonNode(ComparisonNode.LESSTHAN, e1, e2); RESULT.setPosition(oleft, oright);:}
+| expression:e1 LESSTHANEQUAL:o term:e2	{: RESULT = new ComparisonNode(ComparisonNode.LESSTHANEQUAL, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 GREATERTHAN:o term:e2		{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHAN, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 GREATERTHANEQUAL:o term:e2{: RESULT = new ComparisonNode(ComparisonNode.GREATERTHANEQUAL, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 EQUAL:o term:e2			{: RESULT = new EqualsNode(EqualsNode.EQUAL, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 NOTEQUAL:o term:e2		{: RESULT = new EqualsNode(EqualsNode.NOTEQUAL, e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 CONCAT:o term:e2			{: RESULT = new ConcatNode(e1, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 LEFTBRACKET:o expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); RESULT.setPosition(oleft, oright); :}
+| expression:e1 LEFTBRACKET:o expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); RESULT.setPosition(oleft, oright); :}
+| expression:e1 LEFTBRACKET:o COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); RESULT.setPosition(oleft, oright); :}
+| expression:e1 LEFTBRACKET:o expression:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); RESULT.setPosition(oleft, oright); :}
 ;
 
 term ::=
 factor:e					{: RESULT = e; :}
-| term:e1 MULTIPLY factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.MULTIPLY, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| term:e1 DIVIDE factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.DIVIDE, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| term:e1 POWER factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); RESULT.setPosition(e1left, e1right); :}
-| term:e1 AND factor:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.AND, e1, e2); RESULT.setPosition(e1left, e1right); :}
+| term:e1 MULTIPLY:o factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.MULTIPLY, e1, e2); RESULT.setPosition(oleft, oright); :}
+| term:e1 DIVIDE:o factor:e2	{: RESULT = new NumericOperationNode(NumericOperationNode.DIVIDE, e1, e2); RESULT.setPosition(oleft, oright); :}
+| term:e1 AND:o factor:e2		{: RESULT = new BooleanOperationNode(BooleanOperationNode.AND, e1, e2); RESULT.setPosition(oleft, oright); :}
 ;
 
 factor ::=
-exponent:e1 POWER factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); RESULT.setPosition(e1left, e1right);:}
+exponent:e1 POWER:o factor:e2 {: RESULT = new NumericOperationNode(NumericOperationNode.POWER, e1, e2); RESULT.setPosition(oleft, oright);:}
 | exponent:e				{: RESULT = e; :}
 ;
 
 exponent ::=
-MINUS exponent:e			{: RESULT = new NegativeNode(e); RESULT.setPosition(eleft, eright);:}
+MINUS:o exponent:e			{: RESULT = new NegativeNode(e); RESULT.setPosition(oleft, oright);:}
 | final:e					{: RESULT = e; :}
 ;
 

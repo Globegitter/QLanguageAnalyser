@@ -23,7 +23,7 @@ public class ParserTest {
 			testFile("./testfiles/test" + i);
 			System.out.println("\n\n\n\n\n");
 		}
-		//testFile("./testfiles/test8");
+		//testFile("./testfiles/test4");
 	}
 	
 	public static void testParser(QCup parser) throws Exception {
