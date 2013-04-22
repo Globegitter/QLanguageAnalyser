@@ -31,7 +31,7 @@ terminal IF, ELSE, REPEAT, UNTIL, RETURN, DO, WHILE;
 
 non terminal String type;
 non terminal AccessorNode accessor;
-non terminal ExprNode expression, term, factor, exponent, final;
+non terminal ExprNode expression, term, factor, exponent, final, atom;
 non terminal FuncCallExprNode function_call;
 non terminal SequenceNode sequence;
 non terminal LinkedList<ExprNode> list, tuple;
@@ -228,10 +228,6 @@ term:e							{: RESULT = e; :}
 | expression:e1 EQUAL:o term:e2			{: RESULT = new EqualsNode(EqualsNode.EQUAL, e1, e2); RESULT.setPosition(oleft, oright); :}
 | expression:e1 NOTEQUAL:o term:e2		{: RESULT = new EqualsNode(EqualsNode.NOTEQUAL, e1, e2); RESULT.setPosition(oleft, oright); :}
 | expression:e1 CONCAT:o term:e2			{: RESULT = new ConcatNode(e1, e2); RESULT.setPosition(oleft, oright); :}
-| expression:e1 LEFTBRACKET:o expression:e2 COLON expression:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); RESULT.setPosition(oleft, oright); :}
-| expression:e1 LEFTBRACKET:o expression:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); RESULT.setPosition(oleft, oright); :}
-| expression:e1 LEFTBRACKET:o COLON expression:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); RESULT.setPosition(oleft, oright); :}
-| expression:e1 LEFTBRACKET:o expression:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); RESULT.setPosition(oleft, oright); :}
 ;
 
 term ::=
@@ -248,11 +244,18 @@ exponent:e1 POWER:o factor:e2 {: RESULT = new NumericOperationNode(NumericOperat
 
 exponent ::=
 MINUS:o exponent:e			{: RESULT = new NegativeNode(e); RESULT.setPosition(oleft, oright);:}
+| atom:e					{: RESULT = e; :}
+;
+
+atom ::=
+final:e1 LEFTBRACKET:o final:e2 COLON final:e3 RIGHTBRACKET {: RESULT = new IndexRangeNode(e1, e2, e3); RESULT.setPosition(oleft, oright); :}
+| final:e1 LEFTBRACKET:o final:e2 COLON RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, e2, null); RESULT.setPosition(oleft, oright); :}
+| final:e1 LEFTBRACKET:o COLON final:e2 RIGHTBRACKET			   {: RESULT = new IndexRangeNode(e1, null, e2); RESULT.setPosition(oleft, oright); :}
+| final:e1 LEFTBRACKET:o final:e2 RIGHTBRACKET					   {: RESULT = new IndexNode(e1, e2); RESULT.setPosition(oleft, oright); :}
 | final:e					{: RESULT = e; :}
 ;
 
-final ::=
-accessor:e							{: RESULT = e; :}
+final ::= accessor:e						{: RESULT = e; :}
 | LEFTPAREN expression:e RIGHTPAREN	{: RESULT = e; :}
 | INTLITERAL:val					{: RESULT = new IntNode(val); RESULT.setPosition(valleft, valright); :}												
 | FLOATLITERAL:val					{: RESULT = new FloatNode(val); RESULT.setPosition(valleft, valright);:}

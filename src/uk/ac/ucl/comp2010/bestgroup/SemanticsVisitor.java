@@ -351,6 +351,7 @@ public class SemanticsVisitor extends Visitor{
 				if(isSupertype(type, v)) {
 					type = v;
 				} else if(! isSupertype(v, type)) {
+					error("All elements in a list need to be compatible types. Cannot convert from " + v + " to " + type, n);
 					type = null;
 				}
 			}
