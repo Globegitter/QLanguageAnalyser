@@ -463,13 +463,10 @@ public class SemanticsVisitor extends Visitor{
 			}
 		} else if(isSupertype(left, "tuple") && isSupertype(right, "tuple")){
 			return "tuple";
-<<<<<<< HEAD
-=======
 		} else if (left.equals("list") && right.equals("list")){
 			return "list";
 		} else if (left.equals("string") && right.equals("string")){
 		    return "string";		    
->>>>>>> 50ffe44ba5ea30c495eb977c5abbcab5f4f45824
 		} else {
 			error("Can't concatenate types " + node.left + " and " + node.right, node);
 			return null;
