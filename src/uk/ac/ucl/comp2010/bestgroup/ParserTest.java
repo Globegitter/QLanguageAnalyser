@@ -17,14 +17,14 @@ public class ParserTest {
 		//testFile("./testfiles/test");
 		
 		
-		/*int nrTests = 11;
+		int nrTests = 11;
 		for (int i = 1; i <= nrTests; i++) {
 			System.out.println("----------------Running now test " + i + "----------------");
 			testFile("./testfiles/test" + i);
 			System.out.println("\n\n\n\n\n");
-		}*/
+		}
 		//testString(" a:list = [1,2]; {}");
-		testFile("./testfiles/test4");
+		//testFile("./testfiles/test4");
 	}
 	
 	public static void testParser(QCup parser) throws Exception {
