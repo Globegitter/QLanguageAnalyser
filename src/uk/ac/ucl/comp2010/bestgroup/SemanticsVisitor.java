@@ -6,7 +6,7 @@ import uk.ac.ucl.comp2010.bestgroup.AST.*;
 public class SemanticsVisitor extends Visitor{
 
 	LinkedList<HashMap<String, DeclNode>> symbolTables;
-	String returnNodeType;
+	String returnType;
 
 	public void error(String err, Node node) {
 		System.out.println(err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
@@ -178,7 +178,6 @@ public class SemanticsVisitor extends Visitor{
 
 	@Override
 	public Object visit(FuncDeclNode node) {
-		returnNodeType = node.type.toString();
 		if (!isType(node.type) && node.type != "void") {
 			error("Type " + node.type + " does not exist", node);
 			return null;
@@ -191,6 +190,7 @@ public class SemanticsVisitor extends Visitor{
 
 		insert(node.id, node);
 
+		
 		beginScope();
 
 		for (ListIterator<VarTypeNode> li = node.args.listIterator(); li
@@ -199,14 +199,16 @@ public class SemanticsVisitor extends Visitor{
 			if (!isType(n.type)) {
 				error("Type " + n.type + " does not exist", n);
 				endScope();
+				returnType = null;
 				return null;
 			} else {
 				insert(n.id, new VarDeclNode(n, new LinkedList<ExprNode>()));
 			}
 		}
 
+		returnType = node.type.toString();
 		visit(node.body);
-
+		returnType = null;
 		endScope();
         
 		return null;
@@ -559,11 +561,16 @@ public class SemanticsVisitor extends Visitor{
 	
 	@Override
 	public Object visit(ReturnNode node){
-		if(node.expr.toString().equals(returnNodeType)){
-			return "Not sure what this returns";
+		if(node.expr != null) {
+			String v = (String) visit(node.expr);
+			if(returnType == "void") {
+				error("Function shuold not return a value", node.expr);
+			} else if(! isSupertype(v, returnType)){
+				error("Function should return type " + returnType + ". v " + " given", node.expr);
+			}
 		}
 		
-		return "ReturnNode error - return type must be the same as declaration type";
+		return null;
 	}
 
 }
