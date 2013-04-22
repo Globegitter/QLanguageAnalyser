@@ -159,7 +159,7 @@ public class SemanticsVisitor extends Visitor{
 	public Object visit(FuncCallExprNode node) {
 		DeclNode fdef = lookupFirst(node.id);
 		if (fdef == null || !(fdef instanceof FuncDeclNode)) {
-			error("Function " + node.id + " does not exit", node);
+			error("Function " + node.id + " does not exist", node);
 			return null;
 		} else if (node.args.size() != ((FuncDeclNode) fdef).args.size()) {
 			error("Function " + node.id + " should take "
@@ -237,11 +237,11 @@ public class SemanticsVisitor extends Visitor{
 		if(node.value != null) { //variable is initialised
 			if(node.var.type.equals("int") || node.var.type.equals("bool") || node.var.type.equals("float") || node.var.type.equals("char") || node.var.type.equals("tuple") || node.var.type.equals("list") || node.var.type.equals("string")) {
 				if(node.value.size() != 1) {
-					error("Invalid variable initialisation", node);
+					error("Invalid variable initialisation - wrong number of values", node);
 				} else {
 					String v = (String) visit(node.value.getFirst());
 					if(v != null && ! isSupertype(v, node.var.type)) {
-						error("Can't convert from " + v + " to " + node.var.type, node);	
+						error("Invalid variable initialisation - Can't convert from " + v + " to " + node.var.type, node);	
 					}
 				}
 			} else {
@@ -410,7 +410,7 @@ public class SemanticsVisitor extends Visitor{
 		if(left == null || right == null) {
 		} else if((left.equals("int") && right.equals("int")) || (left.equals("float") && right.equals("float")) || (left.equals("bool") && right.equals("bool")) || (left.equals("int") && right.equals("float")) || (left.equals("float") && right.equals("int"))){
 		} else {
-			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
+			error("Types " + left + " and " + right + " not valid for operation " + node.op, node);
 		}
 		
 		return node.setType("bool");
@@ -447,8 +447,7 @@ public class SemanticsVisitor extends Visitor{
 		if(left == null || right == null) {
 		} else if(left.equals("bool") && right.equals("bool")){
 		} else {
-			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
-
+			error("Types " + left + " and " + right + " not valid for operation " + node.op, node);
 		}	
 		return node.setType("bool");
 	}
@@ -487,7 +486,7 @@ public class SemanticsVisitor extends Visitor{
 		} else if (isSupertype(left, right)){
 		} else if(isSupertype(right, left)){
 		} else {
-			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
+			error("Types " + left + " and " + right + " not valid for operation " + node.op, node);
 		}	
 		return node.setType("bool");
 	}
@@ -527,7 +526,7 @@ public class SemanticsVisitor extends Visitor{
 		visit(node.left);
 		String r = (String) visit(node.right);
 		if(r != null && ! isSupertype((String) r, "tuple")) {
-			error("'in' can only refer to a sequence. " + r + " given", node);
+			error("'in' requires a sequence. " + r + " given", node);
 		}
 		return node.setType("bool");
 	}
@@ -536,7 +535,7 @@ public class SemanticsVisitor extends Visitor{
 	public Object visit(LengthNode node) {
 		String s = (String) visit(node.sequence);
 		if(s != null && ! isSupertype((String) s, "tuple")) {
-			error("'len' can only refer to a sequence. " + s + " given", node);
+			error("'len' requires a sequence. " + s + " given", node);
 		}
 		return node.setType("int");
 	}
@@ -553,17 +552,19 @@ public class SemanticsVisitor extends Visitor{
 		} else if(left.equals("int") && right.equals("float") || left.equals("float") && right.equals("int") || left.equals("float") && right.equals("float")){
 			return node.setType("float");
 		} else {
-			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
+			error("Types " + left + " and " + right + " not valid for operation " + node.op, node);
 			return null;
 		}
 	}
 	
 	@Override
 	public Object visit(ReturnNode node){
-		if(node.expr != null) {
+		if(returnType == null) {
+			error("return can only be used within a function", node);
+		} else if(node.expr != null) {
 			String v = (String) visit(node.expr);
 			if(returnType == "void") {
-				error("Function shuold not return a value", node.expr);
+				error("Functions declared as void should not return a value", node.expr);
 			} else if(! isSupertype(v, returnType)){
 				error("Function should return type " + returnType + ". v " + " given", node.expr);
 			}
