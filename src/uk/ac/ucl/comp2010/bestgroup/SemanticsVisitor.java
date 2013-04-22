@@ -6,6 +6,7 @@ import uk.ac.ucl.comp2010.bestgroup.AST.*;
 public class SemanticsVisitor extends Visitor{
 
 	LinkedList<HashMap<String, DeclNode>> symbolTables;
+	String returnNodeType;
 
 	public void error(String err, Node node) {
 		System.out.println(err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
@@ -177,6 +178,7 @@ public class SemanticsVisitor extends Visitor{
 
 	@Override
 	public Object visit(FuncDeclNode node) {
+		returnNodeType = node.type.toString();
 		if (!isType(node.type) && node.type != "void") {
 			error("Type " + node.type + " does not exist", node);
 			return null;
@@ -206,7 +208,7 @@ public class SemanticsVisitor extends Visitor{
 		visit(node.body);
 
 		endScope();
-
+        
 		return null;
 		// for declaring functions
 	}
@@ -461,6 +463,13 @@ public class SemanticsVisitor extends Visitor{
 			}
 		} else if(isSupertype(left, "tuple") && isSupertype(right, "tuple")){
 			return "tuple";
+<<<<<<< HEAD
+=======
+		} else if (left.equals("list") && right.equals("list")){
+			return "list";
+		} else if (left.equals("string") && right.equals("string")){
+		    return "string";		    
+>>>>>>> 50ffe44ba5ea30c495eb977c5abbcab5f4f45824
 		} else {
 			error("Can't concatenate types " + node.left + " and " + node.right, node);
 			return null;
@@ -549,6 +558,15 @@ public class SemanticsVisitor extends Visitor{
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
 			return null;
 		}
+	}
+	
+	@Override
+	public Object visit(ReturnNode node){
+		if(node.expr.toString().equals(returnNodeType)){
+			return "Not sure what this returns";
+		}
+		
+		return "ReturnNode error - return type must be the same as declaration type";
 	}
 
 }
