@@ -317,6 +317,8 @@ public class SemanticsVisitor extends Visitor{
 			return "tuple";
 		} else if (left.equals("list") && right.equals("list")){
 			return "list";
+		} else if (left.equals("string") && right.equals("string")){
+		    return "string";		    
 		} else {
 			error("Can't concatenate types " + node.left + " and " + node.right, node);
 			return null;
