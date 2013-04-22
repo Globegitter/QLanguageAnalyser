@@ -95,7 +95,7 @@ public class SemanticsVisitor extends Visitor{
 			return null;
 		} else {
 			if (node.path.size() == 1) {
-				return ((VarDeclNode) vardecl).var.type;
+				return node.setType(((VarDeclNode) vardecl).var.type);
 			} else {
 				String t = ((VarDeclNode) vardecl).var.type;
 				DeclNode type;
@@ -121,7 +121,7 @@ public class SemanticsVisitor extends Visitor{
 					error(e, node);
 					return null;
 				}
-				return t;
+				return node.setType(t);
 			}
 		}
 	}
@@ -133,6 +133,10 @@ public class SemanticsVisitor extends Visitor{
 			error("Can't declare " + node.id + " twice in same scope", node);
 			return null;
 		}		
+		
+		if(node.id == "void") {
+			error("Can't declare datatype 'void'. Reserved.", node);
+		}
 
 		for (ListIterator<VarTypeNode> li = node.fields.listIterator(); li
 				.hasNext();) {
@@ -172,7 +176,7 @@ public class SemanticsVisitor extends Visitor{
 				}
 			}
 		}
-		return ((FuncDeclNode) fdef).type;
+		return node.setType(((FuncDeclNode) fdef).type);
 		// for calling functions
 	}
 
@@ -295,37 +299,37 @@ public class SemanticsVisitor extends Visitor{
 
 	@Override
 	public Object visit(BoolNode node){
-		return "bool";
+		return node.setType("bool");
 	}
 
 	@Override
 	public Object visit(CharNode node){
-		return "char";
+		return node.setType("char");
 	}
 
 	@Override
 	public Object visit(FloatNode node){
-		return "float";  	
+		return node.setType("float");  	
 	}
 	
 
 	@Override
 	public Object visit(IntNode node) {
-		return "int";
+		return node.setType("int");
 	}
 	
 	public Object visit(StringNode node){
-		return "string";
+		return node.setType("string");
 	}
 	
 	public Object visit(SequenceNode node){
 		if(node.isTuple) {
 			visitList(node.elements);
-			return "tuple";
+			return node.setType("tuple");
 		}
 		
 		if(node.elements.size() == 0) {
-			return "list";
+			return node.setType("list");
 		}
 			
 		String type = (String) visit(node.elements.getFirst());
@@ -341,9 +345,9 @@ public class SemanticsVisitor extends Visitor{
 			}
 		}
 		if(type == null) {
-			return "list";
+			return node.setType("list");
 		} else {
-			return "list." + type;
+			return node.setType("list." + type);
 		}
 	}
 	
@@ -376,9 +380,9 @@ public class SemanticsVisitor extends Visitor{
 			error("Indexing requires a sequence. " + v + " given", node);
 			return null;
 		} else if(v.equals("string")) {
-			return "char";
+			return node.setType("char");
 		} else if(v.length()>=5 && v.substring(0, 5).equals("list.")){
-			return v.substring(5);
+			return node.setType(v.substring(5));
 		} else {			
 			return null;
 		}		
@@ -396,7 +400,7 @@ public class SemanticsVisitor extends Visitor{
 		}
 		
 		String v = (String) visit(node.var);
-		return v;
+		return node.setType(v);
 	}
 	
 	@Override
@@ -404,13 +408,12 @@ public class SemanticsVisitor extends Visitor{
 		String left = (String) visit(node.left);
 		String right = (String) visit(node.right);
 		if(left == null || right == null) {
-			return "bool";
 		} else if((left.equals("int") && right.equals("int")) || (left.equals("float") && right.equals("float")) || (left.equals("bool") && right.equals("bool")) || (left.equals("int") && right.equals("float")) || (left.equals("float") && right.equals("int"))){
-			return "bool";
 		} else {
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
-			return "bool";
 		}
+		
+		return node.setType("bool");
 	}
 	
 	@Override
@@ -419,9 +422,9 @@ public class SemanticsVisitor extends Visitor{
 		if(e == null) {
 			return null;
 		} else if(e.equals("int")){
-			return "int";
+			return node.setType("int");
 		} else if(e.equals("float")) {
-			return "float";
+			return node.setType("float");
 		} else {
 			error("Can't interpret -<" + e + ">. Expecting numeric value", node);
 			return null;
@@ -434,7 +437,7 @@ public class SemanticsVisitor extends Visitor{
 		if(e != null && !e.equals("bool")) {
 			error("Can't interpret !<" + e + ">. Expecting bool", node);
 		}
-		return "bool";
+		return node.setType("bool");
 	}
 	
 	@Override
@@ -442,13 +445,12 @@ public class SemanticsVisitor extends Visitor{
 		String left = (String) visit(node.left);
 		String right = (String) visit(node.right);
 		if(left == null || right == null) {
-			return "bool";
 		} else if(left.equals("bool") && right.equals("bool")){
-			return "bool";
 		} else {
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
-			return "bool";
-		}
+
+		}	
+		return node.setType("bool");
 	}
 
 	@Override
@@ -459,16 +461,16 @@ public class SemanticsVisitor extends Visitor{
 			return null;
 		} else if(isSupertype(left, "list") && isSupertype(right, "list")){
 			if(left.equals(right)) {
-				return left;
+				return node.setType(left);
 			} else {
-				return "list";
+				return node.setType("list");
 			}
 		} else if(isSupertype(left, "tuple") && isSupertype(right, "tuple")){
-			return "tuple";
+			return node.setType("tuple");
 		} else if (left.equals("list") && right.equals("list")){
-			return "list";
+			return node.setType("list");
 		} else if (left.equals("string") && right.equals("string")){
-		    return "string";		    
+		    return node.setType("string");		    
 		} else {
 			error("Can't concatenate types " + node.left + " and " + node.right, node);
 			return null;
@@ -482,15 +484,12 @@ public class SemanticsVisitor extends Visitor{
 		String left = (String) visit(node.left);
 		String right = (String) visit(node.right);
 		if(left == null || right == null) {
-			return "bool";
 		} else if (isSupertype(left, right)){
-			return "bool";
 		} else if(isSupertype(right, left)){
-			return "bool";
 		} else {
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
-			return "bool";
-		}
+		}	
+		return node.setType("bool");
 	}
 
 	@Override
@@ -530,7 +529,7 @@ public class SemanticsVisitor extends Visitor{
 		if(r != null && ! isSupertype((String) r, "tuple")) {
 			error("'in' can only refer to a sequence. " + r + " given", node);
 		}
-		return "bool";
+		return node.setType("bool");
 	}
 	
 	@Override
@@ -539,7 +538,7 @@ public class SemanticsVisitor extends Visitor{
 		if(s != null && ! isSupertype((String) s, "tuple")) {
 			error("'len' can only refer to a sequence. " + s + " given", node);
 		}
-		return "int";
+		return node.setType("int");
 	}
 
 
@@ -550,9 +549,9 @@ public class SemanticsVisitor extends Visitor{
 		if(left == null || right == null) {
 			return null;
 		} else if(left.equals("int") && right.equals("int")) {
-			return "int";
+			return node.setType("int");
 		} else if(left.equals("int") && right.equals("float") || left.equals("float") && right.equals("int") || left.equals("float") && right.equals("float")){
-			return "float";
+			return node.setType("float");
 		} else {
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
 			return null;

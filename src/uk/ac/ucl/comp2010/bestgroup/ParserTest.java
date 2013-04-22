@@ -17,13 +17,14 @@ public class ParserTest {
 		//testFile("./testfiles/test");
 		
 		
-		int nrTests = 11;
+		/*int nrTests = 11;
 		for (int i = 1; i <= nrTests; i++) {
 			System.out.println("----------------Running now test " + i + "----------------");
 			testFile("./testfiles/test" + i);
 			System.out.println("\n\n\n\n\n");
-		}
-		//testFile("./testfiles/test4");
+		}*/
+		//testString(" a:list = [1,2]; {}");
+		testFile("./testfiles/test4");
 	}
 	
 	public static void testParser(QCup parser) throws Exception {
@@ -33,8 +34,8 @@ public class ParserTest {
 		System.out.println("\nRepeating code\n--------------");
 		new CodeOutputVisitor().visit((ProgramNode)parse_tree.value);
 		
-		//System.out.println("\nAST\n---");
-		//displayTree(parse_tree, 0);
+		System.out.println("\nAST\n---");
+		displayTree(parse_tree.value, 0);
 		
 		System.out.println("\n\nRunning Semantics Visitor\n---------------------");
 		new SemanticsVisitor().visit((ProgramNode)parse_tree.value);
@@ -64,11 +65,11 @@ public class ParserTest {
 		System.out.println(node.getClass().getSimpleName());
 		
 		Field[] nodeFields = node.getClass().getFields();
-
 		for(Field field: nodeFields) {
-			if(field.getName() == "lineNumber" || field.getName() == "charNumber") {
+			if(java.lang.reflect.Modifier.isStatic(field.getModifiers()) || field.getName() == "lineNumber" || field.getName() == "charNumber") {
 				continue;
 			}
+			
 			try {
 				if(Node.class.isInstance(field.get(node))) {
 					System.out.print(indent(i+2) + field.getName() + " = ");
@@ -95,7 +96,7 @@ public class ParserTest {
 				//} else if(ExprOperationNode.class.isInstance(node) && field.getName() == "op") {
 					
 					
-				} else {
+				} else if(! (field.getName()=="type" && field.get(node) == null)){
 					System.out.println(indent(i+2) + field.getName() + " = " + field.get(node));
 				}
 				
