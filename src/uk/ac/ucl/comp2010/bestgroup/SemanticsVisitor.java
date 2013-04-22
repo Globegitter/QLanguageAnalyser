@@ -6,6 +6,7 @@ import uk.ac.ucl.comp2010.bestgroup.AST.*;
 public class SemanticsVisitor extends Visitor{
 
 	LinkedList<HashMap<String, DeclNode>> symbolTables;
+	String returnNodeType;
 
 	public void error(String err, Node node) {
 		System.out.println(err + " (line " + node.lineNumber + ", col " + node.charNumber + ")");
@@ -177,6 +178,7 @@ public class SemanticsVisitor extends Visitor{
 
 	@Override
 	public Object visit(FuncDeclNode node) {
+		returnNodeType = node.type.toString();
 		if (!isType(node.type) && node.type != "void") {
 			error("Type " + node.type + " does not exist", node);
 			return null;
@@ -206,7 +208,7 @@ public class SemanticsVisitor extends Visitor{
 		visit(node.body);
 
 		endScope();
-
+        
 		return null;
 		// for declaring functions
 	}
@@ -369,6 +371,15 @@ public class SemanticsVisitor extends Visitor{
 			error("Can't interpret <" + left + "> " + node.op + " <" + right + ">", node);
 			return null;
 		}
+	}
+	
+	@Override
+	public Object visit(ReturnNode node){
+		if(node.expr.toString().equals(returnNodeType)){
+			return "Not sure what this returns";
+		}
+		
+		return "ReturnNode error - return type must be the same as declaration type";
 	}
 
 }
